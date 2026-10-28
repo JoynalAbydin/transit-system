@@ -270,7 +270,7 @@ function generateTransitHTML(record, letters, rowsPerPage = 6) {
           <div class="th c-letter">পত্র নং</div>
           <div class="th c-date">পত্রের তারিখ</div>
           <div class="th c-addr">ঠিকানা</div>
-          <div class="th c-sig">গ্রহণকারীর স্বাক্ষর</div>
+          <div class="th c-sig">গ্রহণকারীর স্বাক্ষর ও তারিখ</div>
         </div>
         <div class="tbody-wrap">${rowsHTML}</div>
       </div>
