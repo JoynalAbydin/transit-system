@@ -117,6 +117,12 @@ async function seedDatabase(db) {
     }
   }
 
+  // চিঠি-ভিত্তিক "ইনভেলাপ হয়ে গেছে" চিহ্ন (পুরনো ডাটাবেসে কলাম না থাকলে একবার যোগ হয়)
+  const letterCols = await db.execute('PRAGMA table_info(letters)');
+  if (!letterCols.rows.some(c => c.name === 'envelope_done')) {
+    await db.execute('ALTER TABLE letters ADD COLUMN envelope_done INTEGER DEFAULT 0');
+  }
+
   // ড্রাফটের সিরিয়াল নেই: আগে তৈরি হয়ে যাওয়া ড্রাফটগুলোর TMS-… নম্বর ছেড়ে দেওয়া হয় (একবারই কাজ করে)
   await db.execute("UPDATE records SET serial_number = 'DRAFT-' || id WHERE status = 'draft' AND serial_number NOT LIKE 'DRAFT-%'");
 

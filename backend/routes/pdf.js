@@ -627,7 +627,10 @@ router.get('/envelope/:id', authMiddleware, async (req, res) => {
   try {
     const record = await fetchFull(getDb(), req.params.id);
     if (!record) return res.status(404).json({ error: 'Not found' });
-    const html = generateEnvelopeHTML(record, record.letters);
+    // "ইনভেলাপ হয়ে গেছে" চিহ্নিত চিঠি বাদ
+    const pending = record.letters.filter(l => !l.envelope_done);
+    if (!pending.length) return res.status(400).json({ error: 'এই রেকর্ডের সব চিঠির ইনভেলাপ আগেই হয়ে গেছে' });
+    const html = generateEnvelopeHTML(record, pending);
     const pdf  = await htmlToPdf(html, { landscape: true });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="envelope-${record.serial_number}.pdf"`);
@@ -654,11 +657,11 @@ router.post('/envelope/merge', authMiddleware, async (req, res) => {
       const record = await fetchFull(db, rid);
       if (!record) continue;
       recordDates.push(record.date);
-      allLetters.push(...record.letters);
+      allLetters.push(...record.letters.filter(l => !l.envelope_done));   // হয়ে যাওয়া চিঠি বাদ
     }
 
     if (allLetters.length === 0)
-      return res.status(404).json({ error: 'কোনো তথ্য পাওয়া যায়নি' });
+      return res.status(404).json({ error: 'ইনভেলাপের জন্য কোনো বাকি চিঠি নেই (সব "ইনভেলাপ হয়ে গেছে" চিহ্নিত)' });
 
     const html = generateEnvelopeHTML({ date: recordDates[0] || '' }, allLetters);
     const pdf  = await htmlToPdf(html, { landscape: true });

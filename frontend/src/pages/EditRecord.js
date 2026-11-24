@@ -105,7 +105,8 @@ export default function EditRecord() {
             letter_numbers: nums,
             letter_dates:   dates,
             addresses:      (l.addresses || []).map(a => a.address_text),
-            letter_type:    (l.letter_types && l.letter_types[0]) || ''
+            letter_type:    (l.letter_types && l.letter_types[0]) || '',
+            envelope_done:  l.envelope_done ? 1 : 0
           };
         }));
       })
@@ -162,7 +163,8 @@ export default function EditRecord() {
       letter_numbers: group.letter_numbers.filter(n=>n.trim()),
       letter_dates:   group.letter_dates.filter(d=>d.trim()),
       addresses:      group.addresses.filter(a=>a.trim()),
-      letter_type:    group.letter_type
+      letter_type:    group.letter_type,
+      envelope_done:  e.envelope_done || 0
     } : e));
     setGroup(emptyGroup());
     setEditingIdx(null);
@@ -185,7 +187,8 @@ export default function EditRecord() {
           letter_numbers: e.letter_numbers,
           letter_dates:   e.letter_dates,
           addresses:      e.addresses,
-          letter_type:    e.letter_type || ''
+          letter_type:    e.letter_type || '',
+          envelope_done:  e.envelope_done || 0
         }))
       });
       if (status === 'draft') toast.success(isDraftRec ? 'ড্রাফট আপডেট হয়েছে ✓' : 'ড্রাফট সংরক্ষিত হয়েছে — প্রকাশ করলে ট্রানজিট নম্বর তৈরি হবে');

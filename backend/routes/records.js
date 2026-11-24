@@ -65,7 +65,7 @@ async function insertLetters(db, recordId, letters) {
     const dateStr = Array.isArray(letter.letter_dates)   ? letter.letter_dates.join('\n')   : (letter.letter_date  || '');
     const ltStr   = JSON.stringify(letter.letter_types || (letter.letter_type ? [letter.letter_type] : []));
 
-    const lResult = await db.execute({ sql: 'INSERT INTO letters (record_id, letter_number, letter_date, letter_type) VALUES (?,?,?,?)', args: [recordId, numStr, dateStr, ltStr] });
+    const lResult = await db.execute({ sql: 'INSERT INTO letters (record_id, letter_number, letter_date, letter_type, envelope_done) VALUES (?,?,?,?,?)', args: [recordId, numStr, dateStr, ltStr, letter.envelope_done ? 1 : 0] });
     const letterId = Number(lResult.lastInsertRowid);
 
     for (const n of (letter.letter_numbers || []).filter(Boolean)) {
@@ -151,6 +151,17 @@ router.get('/:id', authMiddleware, async (req, res) => {
     const record = await fetchFull(getDb(), req.params.id);
     if (!record) return res.status(404).json({ error: 'Record not found' });
     res.json(record);
+  } catch(err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── PATCH চিঠির "ইনভেলাপ হয়ে গেছে" চিহ্ন (ম্যানুয়াল) ──
+// চিহ্নিত চিঠি ইনভেলাপ PDF/প্রিভিউ থেকে বাদ যায়; ট্রানজিটে সবসময় থাকে।
+router.patch('/letters/:letterId/envelope-done', authMiddleware, async (req, res) => {
+  try {
+    const done = req.body.done ? 1 : 0;
+    const r = await getDb().execute({ sql: 'UPDATE letters SET envelope_done=? WHERE id=?', args: [done, req.params.letterId] });
+    if (!r.rowsAffected) return res.status(404).json({ error: 'Letter not found' });
+    res.json({ id: Number(req.params.letterId), envelope_done: done });
   } catch(err) { res.status(500).json({ error: err.message }); }
 });
 

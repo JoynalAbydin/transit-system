@@ -76,6 +76,16 @@ function TransitRowDropdown({ recId, recSerial, pdfLoading, onDownload }) {
   );
 }
 
+// blob response-এর error থেকে সার্ভারের বার্তা বের করে (না পেলে fallback)
+async function errMessage(err, fallback) {
+  try {
+    const d = err?.response?.data;
+    if (d instanceof Blob) { const j = JSON.parse(await d.text()); if (j?.error) return j.error; }
+    else if (d?.error) return d.error;
+  } catch {}
+  return fallback;
+}
+
 // ── Envelope Preview Modal ─────────────────────────────────────────────────
 function EnvelopePreviewModal({ rec, onClose }) {
   const [data, setData] = useState(null);
@@ -115,8 +125,18 @@ function EnvelopePreviewModal({ rec, onClose }) {
   }
 
   // Collect all envelopes from all letters
-  // একই ঠিকানার চিঠি একটি ইনভেলাপে মিলিয়ে দেখানো হয়
-  const envelopes = data?.letters ? groupByAddress(data.letters) : [];
+  // "ইনভেলাপ হয়ে গেছে" চিহ্নিত চিঠি বাদ; বাকিগুলোর একই ঠিকানা একটি ইনভেলাপে মিলিয়ে দেখানো হয়
+  const allLetters = data?.letters || [];
+  const doneCount  = allLetters.filter(l => l.envelope_done).length;
+  const envelopes  = groupByAddress(allLetters.filter(l => !l.envelope_done));
+
+  const toggleDone = async (letter) => {
+    const done = !letter.envelope_done;
+    try {
+      await axios.patch(`/api/records/letters/${letter.id}/envelope-done`, { done });
+      setData(d => ({ ...d, letters: d.letters.map(l => l.id === letter.id ? { ...l, envelope_done: done ? 1 : 0 } : l) }));
+    } catch { toast.error('চিহ্ন দিতে সমস্যা'); }
+  };
 
   return createPortal(
     <div
@@ -160,10 +180,38 @@ function EnvelopePreviewModal({ rec, onClose }) {
               <div className="spinner"></div>
               <p className="text-gray-400 text-sm">লোড হচ্ছে...</p>
             </div>
-          ) : envelopes.length === 0 ? (
+          ) : (
+            <>
+            {/* চিঠির তালিকা: ম্যানুয়াল "ইনভেলাপ হয়ে গেছে" চিহ্ন */}
+            {allLetters.length > 0 && (
+              <div className="mb-5 border border-gray-200 rounded-xl overflow-hidden">
+                <div className="bg-gray-50 px-4 py-2 text-xs font-semibold text-gray-600 border-b border-gray-200">
+                  ✅ যেসব চিঠির ইনভেলাপ আগেই হয়ে গেছে সেগুলোতে টিক দিন — ইনভেলাপ ডাউনলোডে বাদ যাবে (ট্রানজিটে সবই থাকবে)
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {allLetters.map(l => {
+                    const nums = (l.letter_numbers || []).join(', ') || '—';
+                    const addrs = (l.addresses || []).map(a => String(a.address_text || '').split('\n')[0]).join(' • ');
+                    return (
+                      <label key={l.id} className={`flex items-start gap-3 px-4 py-2 cursor-pointer hover:bg-gray-50 ${l.envelope_done ? 'bg-green-50/60' : ''}`}>
+                        <input type="checkbox" checked={!!l.envelope_done} onChange={() => toggleDone(l)}
+                          className="mt-1 w-4 h-4 accent-green-600 flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className={`text-sm ${l.envelope_done ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{nums}</div>
+                          <div className="text-xs text-gray-400 truncate">{addrs}</div>
+                        </div>
+                        {!!l.envelope_done && <span className="ml-auto text-xs text-green-700 bg-green-100 px-2 py-0.5 rounded-lg flex-shrink-0">ইনভেলাপ হয়েছে</span>}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {envelopes.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
               <div className="text-5xl mb-3">📭</div>
-              <p>কোনো ঠিকানা পাওয়া যায়নি</p>
+              <p>{allLetters.length > 0 && doneCount === allLetters.length ? 'সব চিঠির ইনভেলাপ হয়ে গেছে' : 'কোনো ঠিকানা পাওয়া যায়নি'}</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4">
@@ -196,13 +244,15 @@ function EnvelopePreviewModal({ rec, onClose }) {
                 );
               })}
             </div>
+            )}
+            </>
           )}
         </div>
 
         {/* Modal footer */}
         {!loading && envelopes.length > 0 && (
           <div className="px-6 py-3 border-t border-gray-100 flex items-center justify-between flex-shrink-0 bg-gray-50">
-            <span className="text-xs text-gray-400">মোট {toBanglaNumber(envelopes.length)} টি ঠিকানা</span>
+            <span className="text-xs text-gray-400">ইনভেলাপ হবে {toBanglaNumber(envelopes.length)} টি{doneCount > 0 ? ` (${toBanglaNumber(doneCount)} টি চিঠি বাদ — আগেই হয়েছে)` : ''}</span>
             <button onClick={onClose}
               className="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm px-4 py-1.5 rounded-lg transition-all">
               ✕ বন্ধ করুন
@@ -275,7 +325,7 @@ export default function Dashboard() {
       a.href = url; a.download = `${type}${suffix}-${serial}.pdf`; a.click();
       URL.revokeObjectURL(url);
       toast.success('PDF ডাউনলোড শুরু হয়েছে');
-    } catch { toast.error('PDF তৈরিতে সমস্যা'); }
+    } catch (err) { toast.error(await errMessage(err, 'PDF তৈরিতে সমস্যা')); }
     finally { setPdfLoad(p => ({ ...p, [key]: false })); }
   };
 
@@ -301,7 +351,7 @@ export default function Dashboard() {
       URL.revokeObjectURL(url);
       toast.success(`${toBanglaNumber(ids.length)} টি রেকর্ডের ইনভেলাপ ডাউনলোড হচ্ছে`);
       setEnvSelected([]);
-    } catch { toast.error('মার্জ ইনভেলাপ তৈরিতে সমস্যা'); }
+    } catch (err) { toast.error(await errMessage(err, 'মার্জ ইনভেলাপ তৈরিতে সমস্যা')); }
     finally { setMerging(false); }
   };
 
