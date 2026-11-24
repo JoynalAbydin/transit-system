@@ -2,6 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const { getDb } = require('../database/db');
 const { authMiddleware } = require('../middleware/auth');
+const { buildRows } = require('../utils/groupLetters');
 
 function toBn(n) {
   const d = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
@@ -59,15 +60,8 @@ async function fetchFull(db, recordId) {
 function generateTransitHTML(record, letters, rowsPerPage = 6) {
   const RPP = [5,6,7,10,11,12].includes(Number(rowsPerPage)) ? Number(rowsPerPage) : 6;
 
-  const rows = [];
-  let serial = 1;
-  for (const letter of letters) {
-    const nums  = letter.letter_numbers || [letter.letter_number];
-    const dates = letter.letter_dates   || [letter.letter_date];
-    for (const addr of letter.addresses) {
-      rows.push({ serial: serial++, nums, dates, address: addr.address_text });
-    }
-  }
+  // একই ঠিকানার চিঠি একটি রো-তে মিলিয়ে আসে
+  const rows = buildRows(letters).map((r, i) => ({ serial: i + 1, nums: r.nums, dates: r.dates, address: r.address }));
   while (rows.length < RPP || rows.length % RPP !== 0) {
     rows.push({ serial: null, nums: [], dates: [], address: '' });
   }
@@ -295,15 +289,8 @@ function generateTransitHTML(record, letters, rowsPerPage = 6) {
 // অন্য কোনো ফাংশন বা PDF এর সাথে এর কোনো সম্পর্ক নেই।
 // ──────────────────────────────────────────────────────────────────────────
 function generateSignalTransitHTML(record, letters) {
-  const rows = [];
-  let serial = 1;
-  for (const letter of letters) {
-    const nums  = letter.letter_numbers || [letter.letter_number];
-    const dates = letter.letter_dates   || [letter.letter_date];
-    for (const addr of letter.addresses) {
-      rows.push({ serial: serial++, nums, dates, address: addr.address_text });
-    }
-  }
+  // একই ঠিকানার চিঠি একটি রো-তে মিলিয়ে আসে
+  const rows = buildRows(letters).map((r, i) => ({ serial: i + 1, nums: r.nums, dates: r.dates, address: r.address }));
   const dateBn = formatDateBn(record.date);
 
   /* ← এই লাইনগুলো বদলে ফাঁকা/সাইজ ঠিক করুন */
@@ -401,15 +388,8 @@ function generateSignalTransitHTML(record, letters) {
 }
 
 function generateEnvelopeHTML(record, letters) {
-  const envs = [];
-  for (const letter of letters) {
-    const nums  = letter.letter_numbers || [letter.letter_number];
-    const dates = letter.letter_dates   || [letter.letter_date];
-    const ltype = letter.letter_type || '';
-    for (const addr of letter.addresses) {
-      envs.push({ nums, dates, address: addr.address_text, letter_type: ltype });
-    }
-  }
+  // একই ঠিকানার চিঠি একটি ইনভেলাপে মিলিয়ে আসে
+  const envs = buildRows(letters);
   if (!envs.length) envs.push({ nums:[''], dates:[''], address:'' });
 
   const envsHTML = envs.map(e => {
@@ -603,6 +583,41 @@ router.get('/transit/:id', authMiddleware, async (req, res) => {
     res.end(pdf);
   } catch(err) {
     console.error('Transit PDF:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Merge Transit (একাধিক রেকর্ড → একটি ট্রানজিট PDF) ──
+router.post('/transit/merge', authMiddleware, async (req, res) => {
+  try {
+    const db = getDb();
+    const { record_ids, rows, mode } = req.body;
+    if (!record_ids || !Array.isArray(record_ids) || record_ids.length === 0)
+      return res.status(400).json({ error: 'record_ids array required' });
+
+    const allLetters = [];
+    let headRecord = null;
+
+    for (const rid of record_ids) {
+      const record = await fetchFull(db, rid);
+      if (!record || record.status === 'draft') continue;
+      if (!headRecord) headRecord = record;          // হেডিং: প্রথম নির্বাচিত রেকর্ডের তারিখ
+      allLetters.push(...record.letters);
+    }
+
+    if (!headRecord || allLetters.length === 0)
+      return res.status(404).json({ error: 'কোনো তথ্য পাওয়া যায়নি' });
+
+    const html = mode === 'signal'
+      ? generateSignalTransitHTML(headRecord, allLetters)
+      : generateTransitHTML(headRecord, allLetters, parseInt(rows) || 6);
+    const pdf  = await htmlToPdf(html, { landscape: false });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="merged-transit.pdf"');
+    res.setHeader('Content-Length', pdf.length);
+    res.end(pdf);
+  } catch(err) {
+    console.error('Merge Transit:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

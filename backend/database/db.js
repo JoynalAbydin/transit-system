@@ -117,6 +117,9 @@ async function seedDatabase(db) {
     }
   }
 
+  // ড্রাফটের সিরিয়াল নেই: আগে তৈরি হয়ে যাওয়া ড্রাফটগুলোর TMS-… নম্বর ছেড়ে দেওয়া হয় (একবারই কাজ করে)
+  await db.execute("UPDATE records SET serial_number = 'DRAFT-' || id WHERE status = 'draft' AND serial_number NOT LIKE 'DRAFT-%'");
+
   console.log('✅ Database ready (Turso)');
 }
 

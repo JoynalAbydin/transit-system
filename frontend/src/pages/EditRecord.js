@@ -105,7 +105,7 @@ export default function EditRecord() {
             letter_numbers: nums,
             letter_dates:   dates,
             addresses:      (l.addresses || []).map(a => a.address_text),
-            letter_type:    l.letter_type || ''
+            letter_type:    (l.letter_types && l.letter_types[0]) || ''
           };
         }));
       })
@@ -188,13 +188,15 @@ export default function EditRecord() {
           letter_type:    e.letter_type || ''
         }))
       });
-      toast.success(status === 'draft' ? `ড্রাফট সংরক্ষিত` : `আপডেট হয়েছে: ${res.data.serial_number}`);
+      if (status === 'draft') toast.success(isDraftRec ? 'ড্রাফট আপডেট হয়েছে ✓' : 'ড্রাফট সংরক্ষিত হয়েছে — প্রকাশ করলে ট্রানজিট নম্বর তৈরি হবে');
+      else toast.success(isDraftRec ? `প্রকাশিত হয়েছে: ${res.data.serial_number}` : `আপডেট হয়েছে: ${res.data.serial_number}`);
       navigate('/');
     } catch { toast.error('সমস্যা হয়েছে'); }
     finally { setSaving(false); }
   };
 
   const totalAddr = entries.reduce((s,e)=>s+e.addresses.length,0);
+  const isDraftRec = meta.status === 'draft';   // ড্রাফট = একই রেকর্ডে আপডেট, সিরিয়াল প্রকাশের সময়
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="spinner"></div></div>;
 
@@ -344,17 +346,17 @@ export default function EditRecord() {
       <div className="bg-gradient-to-r from-[#0f2744] to-[#1e3a5f] rounded-2xl p-6 text-white">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <h3 className="font-bold text-lg">নতুন রেকর্ড হিসেবে সংরক্ষণ করুন</h3>
-            <p className="text-blue-300 text-sm mt-1">পুরনো রেকর্ড থাকবে, নতুনটি তালিকার শুরুতে যুক্ত হবে</p>
+            <h3 className="font-bold text-lg">{isDraftRec ? 'ড্রাফট সংরক্ষণ / প্রকাশ করুন' : 'নতুন রেকর্ড হিসেবে সংরক্ষণ করুন'}</h3>
+            <p className="text-blue-300 text-sm mt-1">{isDraftRec ? 'ড্রাফট যতবার ইচ্ছা আপডেট করা যাবে; প্রকাশ করলেই ট্রানজিট নম্বর তৈরি হবে' : 'পুরনো রেকর্ড থাকবে, নতুনটি তালিকার শুরুতে যুক্ত হবে'}</p>
           </div>
           <div className="flex gap-3 flex-wrap">
             <button onClick={() => handleSubmit('draft')} disabled={!!saving || !meta.date}
               className="bg-white/20 hover:bg-white/30 text-white font-bold px-6 py-3 rounded-xl transition-all disabled:opacity-50 border border-white/40 flex items-center gap-2">
-              {saving === 'draft' ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>সংরক্ষণ...</> : '📝 ড্রাফট করুন'}
+              {saving === 'draft' ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>সংরক্ষণ...</> : isDraftRec ? '📝 ড্রাফট আপডেট করুন' : '📝 ড্রাফট করুন'}
             </button>
             <button onClick={() => handleSubmit('published')} disabled={!!saving || !entries.length}
               className="bg-yellow-400 hover:bg-yellow-300 text-blue-900 font-bold px-8 py-3 rounded-xl transition-all disabled:opacity-50 shadow-lg flex items-center gap-2">
-              {saving === 'published' ? <><div className="w-4 h-4 border-2 border-blue-900/30 border-t-blue-900 rounded-full animate-spin"></div>সংরক্ষণ...</> : '💾 সংরক্ষণ করুন'}
+              {saving === 'published' ? <><div className="w-4 h-4 border-2 border-blue-900/30 border-t-blue-900 rounded-full animate-spin"></div>সংরক্ষণ...</> : isDraftRec ? '🚀 প্রকাশ করুন' : '💾 সংরক্ষণ করুন'}
             </button>
           </div>
         </div>

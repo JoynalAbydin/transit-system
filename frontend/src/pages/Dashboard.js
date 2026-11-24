@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import { toBanglaNumber, areaStyle, DISTRIBUTION_AREAS } from '../utils/helpers';
+import { toBanglaNumber, areaStyle, DISTRIBUTION_AREAS, groupByAddress } from '../utils/helpers';
 
 // Transit row options
 const TRANSIT_ROW_OPTIONS = [
@@ -115,17 +115,8 @@ function EnvelopePreviewModal({ rec, onClose }) {
   }
 
   // Collect all envelopes from all letters
-  const envelopes = [];
-  if (data?.letters) {
-    for (const letter of data.letters) {
-      const nums  = (letter.letter_number || '').split('\n').map(s=>s.trim()).filter(Boolean);
-      const dates = (letter.letter_date   || '').split('\n').map(s=>s.trim()).filter(Boolean);
-      const addrs = letter.addresses || [];
-      for (const addr of addrs) {
-        envelopes.push({ nums, dates, address: addr.address_text || '' });
-      }
-    }
-  }
+  // একই ঠিকানার চিঠি একটি ইনভেলাপে মিলিয়ে দেখানো হয়
+  const envelopes = data?.letters ? groupByAddress(data.letters) : [];
 
   return createPortal(
     <div
@@ -237,16 +228,20 @@ export default function Dashboard() {
   const [envSelected, setEnvSelected] = useState([]);
   const [merging, setMerging]         = useState(false);
   const [previewRec, setPreviewRec]   = useState(null);
+  const [pageSize, setPageSize]       = useState(15);
+  const [transitSelected, setTransitSelected] = useState([]);
+  const [transitRows, setTransitRows] = useState(6);
+  const [mergingTransit, setMergingTransit]   = useState(false);
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/records', { params: { search, page, limit: 15 } });
+      const res = await axios.get('/api/records', { params: { search, page, limit: pageSize } });
       setRecords(res.data.records);
       setTotal(res.data.total);
     } catch { toast.error('ডেটা লোড করতে সমস্যা'); }
     finally { setLoading(false); }
-  }, [search, page]);
+  }, [search, page, pageSize]);
 
   useEffect(() => { fetchRecords(); }, [fetchRecords]);
 
@@ -259,7 +254,11 @@ export default function Dashboard() {
   };
 
   const handlePublish = async (id) => {
-    try { await axios.patch(`/api/records/${id}/publish`); toast.success('প্রকাশিত হয়েছে ✓'); fetchRecords(); }
+    try {
+      const r = await axios.patch(`/api/records/${id}/publish`);
+      toast.success(`প্রকাশিত হয়েছে ✓ ${r.data.serial_number || ''}`);
+      fetchRecords();
+    }
     catch { toast.error('সমস্যা হয়েছে'); }
   };
 
@@ -306,7 +305,28 @@ export default function Dashboard() {
     finally { setMerging(false); }
   };
 
-  const totalPages = Math.ceil(total / 15);
+  const toggleTransitSelect = (id) => setTransitSelected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+
+  const downloadMergedTransit = async () => {
+    if (transitSelected.length === 0) { toast.error('কমপক্ষে একটি রেকর্ড নির্বাচন করুন'); return; }
+    setMergingTransit(true);
+    try {
+      const body = { record_ids: transitSelected };
+      if (transitRows === 'signal') body.mode = 'signal'; else body.rows = transitRows;
+      const res = await axios.post('/api/pdf/transit/merge', body, { responseType: 'blob' });
+      const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const a   = document.createElement('a');
+      a.href = url; a.download = `merged-transit-${transitSelected.length}records.pdf`; a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`${toBanglaNumber(transitSelected.length)} টি রেকর্ড একটি ট্রানজিটে ডাউনলোড হচ্ছে`);
+      setTransitSelected([]);
+    } catch { toast.error('মার্জ ট্রানজিট তৈরিতে সমস্যা'); }
+    finally { setMergingTransit(false); }
+  };
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const fromN = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const toN   = Math.min(page * pageSize, total);
 
   return (
     <div className="fade-in">
@@ -341,6 +361,28 @@ export default function Dashboard() {
         </div>
       )}
 
+
+      {/* Transit checkbox merge bar */}
+      {transitSelected.length > 0 && (
+        <div className="bg-blue-700 text-white rounded-2xl p-3 mb-4 flex items-center justify-between gap-4 flex-wrap shadow-lg">
+          <div className="flex items-center gap-3">
+            <span className="bg-white/20 px-3 py-1 rounded-lg font-bold">{toBanglaNumber(transitSelected.length)}</span>
+            <span className="font-medium text-sm">টি রেকর্ড নির্বাচিত — সব ঠিকানা একটি ট্রানজিটে ডাউনলোড করুন</span>
+          </div>
+          <div className="flex gap-3 items-center flex-wrap">
+            <select value={transitRows} onChange={e => setTransitRows(e.target.value === 'signal' ? 'signal' : Number(e.target.value))}
+              className="bg-white text-blue-800 text-xs font-semibold px-2 py-1.5 rounded-lg outline-none">
+              {TRANSIT_ROW_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              <option value="signal">📡 Signal Transit</option>
+            </select>
+            <button onClick={() => setTransitSelected([])} className="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1.5 rounded-lg transition-all">✕ বাতিল</button>
+            <button onClick={downloadMergedTransit} disabled={mergingTransit}
+              className="bg-white text-blue-700 font-bold text-xs px-4 py-1.5 rounded-lg hover:bg-blue-50 transition-all disabled:opacity-50 flex items-center gap-2 shadow">
+              {mergingTransit ? <><div className="w-3 h-3 border-2 border-blue-200 border-t-blue-700 rounded-full animate-spin"></div> তৈরি হচ্ছে...</> : '📄 ডাউনলোড করুন'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Envelope checkbox merge bar */}
       {envSelected.length > 0 && (
@@ -387,11 +429,13 @@ export default function Dashboard() {
                 </td></tr>
               ) : records.map((rec, idx) => (
                 <tr key={rec.id} className="area-row"
-                  style={{ '--area-bg': envSelected.includes(rec.id) ? 'rgba(99,102,241,0.18)' : areaStyle(rec.distribution_area).bg,
+                  style={{ '--area-bg': (envSelected.includes(rec.id) || transitSelected.includes(rec.id)) ? 'rgba(99,102,241,0.18)' : areaStyle(rec.distribution_area).bg,
                            '--area-solid': areaStyle(rec.distribution_area).solid }}>
-                  <td className="font-bold text-blue-800 text-center w-16">{toBanglaNumber((page-1)*15 + idx + 1)}</td>
+                  <td className="font-bold text-blue-800 text-center w-16">{toBanglaNumber((page-1)*pageSize + idx + 1)}</td>
                   <td className="whitespace-nowrap">
-                    <span className="font-mono font-bold text-[#1e3a5f] text-sm bg-white/70 border border-gray-200 px-2 py-1 rounded-lg">{rec.serial_number}</span>
+                    {rec.status === 'draft'
+                      ? <span className="text-xs text-orange-600 font-semibold bg-white/70 border border-orange-200 px-2 py-1 rounded-lg">প্রকাশের পর আইডি হবে</span>
+                      : <span className="font-mono font-bold text-[#1e3a5f] text-sm bg-white/70 border border-gray-200 px-2 py-1 rounded-lg">{rec.serial_number}</span>}
                   </td>
                   <td className="whitespace-nowrap w-36">
                     <div className="flex flex-col gap-1">
@@ -423,14 +467,21 @@ export default function Dashboard() {
                   </td>
 
                   {/* Transit with row dropdown */}
-                  <td className="text-center w-36">
+                  <td className="text-center whitespace-nowrap">
                     {rec.status === 'draft' ? (
                       <button onClick={() => handlePublish(rec.id)}
                         className="inline-flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1.5 rounded-lg transition-all">
                         🚀 প্রকাশ করুন
                       </button>
                     ) : (
-                      <TransitRowDropdown recId={rec.id} recSerial={rec.serial_number} pdfLoading={pdfLoading} onDownload={downloadPDF} />
+                      <div className="inline-flex items-center gap-1.5">
+                        <TransitRowDropdown recId={rec.id} recSerial={rec.serial_number} pdfLoading={pdfLoading} onDownload={downloadPDF} />
+                        <input type="checkbox"
+                          checked={transitSelected.includes(rec.id)}
+                          onChange={() => toggleTransitSelect(rec.id)}
+                          title="একত্রে একটি ট্রানজিটের জন্য নির্বাচন করুন"
+                          className="w-3.5 h-3.5 rounded cursor-pointer accent-blue-600 flex-shrink-0" />
+                      </div>
                     )}
                   </td>
 
@@ -484,11 +535,19 @@ export default function Dashboard() {
           </table>
         </div>
 
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+        <div className="flex items-center justify-between gap-3 flex-wrap px-6 py-4 border-t border-gray-100">
+          <div className="flex items-center gap-3 flex-wrap">
             <p className="text-sm text-gray-500">
-              মোট {toBanglaNumber(total)} টির মধ্যে {toBanglaNumber((page-1)*15+1)}–{toBanglaNumber(Math.min(page*15,total))}
+              মোট {toBanglaNumber(total)} টির মধ্যে {toBanglaNumber(fromN)}–{toBanglaNumber(toN)}
             </p>
+            <select value={pageSize}
+              onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }}
+              title="প্রতি পেজে কতটি দেখাবে"
+              className="px-3 py-1.5 rounded-lg border text-sm bg-white outline-none focus:ring-2 focus:ring-blue-200">
+              {[15, 20, 30, 50, 100].map(n => <option key={n} value={n}>{toBanglaNumber(n)} টি</option>)}
+            </select>
+          </div>
+          {totalPages > 1 && (
             <div className="flex gap-2">
               <button onClick={() => setPage(p=>Math.max(1,p-1))} disabled={page===1}
                 className="px-3 py-1.5 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-50">← আগে</button>
@@ -505,12 +564,13 @@ export default function Dashboard() {
               <button onClick={() => setPage(p=>Math.min(totalPages,p+1))} disabled={page===totalPages}
                 className="px-3 py-1.5 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-50">পরে →</button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {envSelected.length === 0 && (
+      {envSelected.length === 0 && transitSelected.length === 0 && (
         <div className="text-center text-xs text-gray-400 mt-4 space-y-1">
+          <p>📄 ট্রানজিটের পাশের ছোট চেকবক্সে একাধিক রেকর্ড বেছে একটি ট্রানজিটে ডাউনলোড করুন</p>
           <p>✉️ ইনভেলাপের পাশের ছোট চেকবক্সে নির্দিষ্ট ইনভেলাপ একত্রে একটি PDF ডাউনলোড করুন</p>
           <p>👁️ প্রিভিউ বাটনে ক্লিক করে ডাউনলোড ছাড়াই ঠিকানা দেখুন</p>
         </div>

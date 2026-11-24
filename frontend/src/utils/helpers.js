@@ -76,3 +76,38 @@ export const formatMonthShort = (ym) => {
   if (!m) return String(ym || '');
   return `${BN_MONTHS_SHORT[Number(m[2]) - 1] || m[2]} ${toBanglaNumber(m[1].slice(2))}`;
 };
+
+// ─────────────────────────────────────────────────────────────
+// একই ঠিকানার একাধিক চিঠি → একটি এন্ট্রি (প্রিভিউর জন্য; ব্যাকএন্ডের groupLetters.js-এর মতোই)
+// letters: GET /api/records/:id থেকে পাওয়া letters
+// রিটার্ন: [{ nums, dates, address }]
+// ─────────────────────────────────────────────────────────────
+const normalizeAddress = (t) =>
+  String(t || '').split('\n').map(l => l.replace(/\s+/g, ' ').trim()).filter(Boolean).join('\n').toLowerCase();
+
+export const groupByAddress = (letters) => {
+  const byKey = new Map();
+  const groups = [];
+  (letters || []).forEach((letter, li) => {
+    const nums  = (letter.letter_numbers || (letter.letter_number || '').split('\n')).map(s => String(s).trim()).filter(Boolean);
+    const dates = (letter.letter_dates   || (letter.letter_date   || '').split('\n')).map(s => String(s).trim()).filter(Boolean);
+    for (const addr of (letter.addresses || [])) {
+      const text = addr.address_text || '';
+      const key  = normalizeAddress(text);
+      let g = key ? byKey.get(key) : null;
+      if (!g) { g = { address: text, parts: [], seen: new Set() }; groups.push(g); if (key) byKey.set(key, g); }
+      if (g.seen.has(li)) continue;
+      g.seen.add(li);
+      g.parts.push({ nums, dates });
+    }
+  });
+  return groups.map(g => {
+    if (g.parts.length === 1) return { nums: g.parts[0].nums, dates: g.parts[0].dates, address: g.address };
+    const nums = [], dates = [];
+    for (const p of g.parts) {
+      const n = Math.max(p.nums.length, p.dates.length);
+      for (let i = 0; i < n; i++) { nums.push(p.nums[i] || ''); dates.push(p.dates[i] || ''); }
+    }
+    return { nums, dates, address: g.address };
+  });
+};

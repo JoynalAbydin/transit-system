@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+// ফুটারের পেজ (frontend/public/ এর html ফাইল) ও কপিরাইট টেক্সট — এখানে বদলান
+const FOOTER_PAGES = [
+  { label: 'About',   file: 'about.html' },
+  { label: 'Blog',    file: 'blog.html' },
+  { label: 'Contact', file: 'contact.html' },
+];
+const COPYRIGHT_TEXT = `© ${new Date().getFullYear()} ট্রানজিট ব্যবস্থাপনা। সর্বস্বত্ব সংরক্ষিত।`;
+
 export default function Layout() {
   const { user, logout, isAdmin } = useAuth();
   const location = useLocation();
@@ -18,7 +26,7 @@ export default function Layout() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Navbar */}
       <nav className="bg-gradient-to-r from-[#0f2744] to-[#1e3a5f] shadow-lg sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4">
@@ -88,9 +96,23 @@ export default function Layout() {
         ))}
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-7xl w-full mx-auto px-4 py-6 flex-1">
         <Outlet />
       </main>
+
+      {/* Footer: নেভিগেশন + কপিরাইট */}
+      <footer className="border-t border-gray-200 bg-white mt-6">
+        <div className="max-w-7xl mx-auto px-4 py-5 flex flex-col items-center gap-3">
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium">
+            <Link to="/" className="text-gray-600 hover:text-[#1e3a5f] transition-colors">Home</Link>
+            {FOOTER_PAGES.map(p => (
+              <a key={p.file} href={`${process.env.PUBLIC_URL || '.'}/${p.file}`}
+                className="text-gray-600 hover:text-[#1e3a5f] transition-colors">{p.label}</a>
+            ))}
+          </nav>
+          <p className="text-xs text-gray-400 text-center">{COPYRIGHT_TEXT}</p>
+        </div>
+      </footer>
 
       {menuOpen && <div className="fixed inset-0 z-30" onClick={() => setMenuOpen(false)} />}
     </div>

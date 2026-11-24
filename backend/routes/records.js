@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto  = require('crypto');
 const router  = express.Router();
 const { getDb } = require('../database/db');
 const { authMiddleware } = require('../middleware/auth');
@@ -24,13 +25,69 @@ async function fetchFull(db, id) {
   return { ...record, letters };
 }
 
-// ── Helper: next serial number ──
+// ── Helper: next serial number (শুধু প্রকাশের সময় ডাকা হয়) ──
+// ড্রাফট থেকে প্রকাশ করলে id-র ক্রম আর সিরিয়ালের ক্রম আলাদা হতে পারে,
+// তাই সবচেয়ে বড় সিরিয়াল ধরে পরেরটি তৈরি হয়।
 async function nextSerial(db) {
   const year = new Date().getFullYear();
-  const last = await db.execute({ sql: "SELECT serial_number FROM records WHERE serial_number LIKE ? ORDER BY id DESC LIMIT 1", args: [`TMS-${year}-%`] });
+  const last = await db.execute({ sql: "SELECT serial_number FROM records WHERE serial_number LIKE ? ORDER BY serial_number DESC LIMIT 1", args: [`TMS-${year}-%`] });
   let seq = 1;
-  if (last.rows[0]) { const p = last.rows[0].serial_number.split('-'); seq = parseInt(p[2]) + 1; }
+  if (last.rows[0]) { const p = String(last.rows[0].serial_number).split('-'); seq = (parseInt(p[2]) || 0) + 1; }
   return `TMS-${year}-${String(seq).padStart(4, '0')}`;
+}
+
+// ড্রাফটের কোনো সিরিয়াল/আইডি নেই। কলাম NOT NULL UNIQUE, তাই অস্থায়ী মান 'DRAFT-<id>' রাখা হয়।
+const isDraftSerial = s => String(s || '').startsWith('DRAFT-');
+async function insertRecord(db, { date, area, description, status, userId }) {
+  if (status === 'draft') {
+    const tmp = 'DRAFT-tmp-' + crypto.randomUUID();
+    const r = await db.execute({
+      sql:  'INSERT INTO records (serial_number, date, distribution_area, description, status, created_by) VALUES (?,?,?,?,?,?)',
+      args: [tmp, date, area, description || '', 'draft', userId]
+    });
+    const id = Number(r.lastInsertRowid);
+    const serial = 'DRAFT-' + id;
+    await db.execute({ sql: 'UPDATE records SET serial_number=? WHERE id=?', args: [serial, id] });
+    return { id, serial };
+  }
+  const serial = await nextSerial(db);
+  const r = await db.execute({
+    sql:  'INSERT INTO records (serial_number, date, distribution_area, description, status, created_by) VALUES (?,?,?,?,?,?)',
+    args: [serial, date, area, description || '', 'published', userId]
+  });
+  return { id: Number(r.lastInsertRowid), serial };
+}
+
+// letters + addresses (+ suggestions) সংরক্ষণ
+async function insertLetters(db, recordId, letters) {
+  for (const letter of (letters || [])) {
+    const numStr  = Array.isArray(letter.letter_numbers) ? letter.letter_numbers.join('\n') : (letter.letter_number || '');
+    const dateStr = Array.isArray(letter.letter_dates)   ? letter.letter_dates.join('\n')   : (letter.letter_date  || '');
+    const ltStr   = JSON.stringify(letter.letter_types || (letter.letter_type ? [letter.letter_type] : []));
+
+    const lResult = await db.execute({ sql: 'INSERT INTO letters (record_id, letter_number, letter_date, letter_type) VALUES (?,?,?,?)', args: [recordId, numStr, dateStr, ltStr] });
+    const letterId = Number(lResult.lastInsertRowid);
+
+    for (const n of (letter.letter_numbers || []).filter(Boolean)) {
+      await db.execute({ sql: 'INSERT OR IGNORE INTO letter_number_suggestions (letter_number) VALUES (?)', args: [n] });
+      await db.execute({ sql: 'UPDATE letter_number_suggestions SET use_count=use_count+1 WHERE letter_number=?', args: [n] });
+    }
+
+    for (const [idx, addr] of (letter.addresses || []).entries()) {
+      const txt = typeof addr === 'string' ? addr : addr.address_text;
+      if (!txt) continue;
+      const norm = txt.trim().split('\n').map(l => l.trim()).filter(Boolean).join('\n');
+      await db.execute({ sql: 'INSERT INTO addresses (letter_id, address_text, address_order) VALUES (?,?,?)', args: [letterId, norm, idx] });
+      await db.execute({ sql: 'INSERT OR IGNORE INTO address_suggestions (address_text, use_count) VALUES (?,1)', args: [norm] });
+      await db.execute({ sql: 'UPDATE address_suggestions SET use_count=use_count+1 WHERE address_text=?', args: [norm] });
+    }
+  }
+}
+
+async function clearLetters(db, recordId) {
+  const ls = await db.execute({ sql: 'SELECT id FROM letters WHERE record_id = ?', args: [recordId] });
+  for (const l of ls.rows) await db.execute({ sql: 'DELETE FROM addresses WHERE letter_id = ?', args: [Number(l.id)] });
+  await db.execute({ sql: 'DELETE FROM letters WHERE record_id = ?', args: [recordId] });
 }
 
 // ── Search helpers ──
@@ -98,6 +155,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // ── POST create ──
+// status=draft → শুধু সংরক্ষণ, কোনো সিরিয়াল (ট্রানজিট নম্বর) তৈরি হয় না
 router.post('/', authMiddleware, async (req, res) => {
   const db = getDb();
   const { date, distribution_area, description, letters, status } = req.body;
@@ -105,44 +163,16 @@ router.post('/', authMiddleware, async (req, res) => {
   if (!distribution_area) return res.status(400).json({ error: 'Distribution area required' });
 
   try {
-    const serial    = await nextSerial(db);
     const recStatus = status === 'draft' ? 'draft' : 'published';
-
-    const recResult = await db.execute({
-      sql:  'INSERT INTO records (serial_number, date, distribution_area, description, status, created_by) VALUES (?,?,?,?,?,?)',
-      args: [serial, date, distribution_area, description || '', recStatus, req.user.id]
-    });
-    const recordId = Number(recResult.lastInsertRowid);
-
-    for (const letter of (letters || [])) {
-      const numStr  = Array.isArray(letter.letter_numbers) ? letter.letter_numbers.join('\n') : (letter.letter_number || '');
-      const dateStr = Array.isArray(letter.letter_dates)   ? letter.letter_dates.join('\n')   : (letter.letter_date  || '');
-      const ltStr   = JSON.stringify(letter.letter_types || (letter.letter_type ? [letter.letter_type] : []));
-
-      const lResult = await db.execute({ sql: 'INSERT INTO letters (record_id, letter_number, letter_date, letter_type) VALUES (?,?,?,?)', args: [recordId, numStr, dateStr, ltStr] });
-      const letterId = Number(lResult.lastInsertRowid);
-
-      // Suggestions
-      for (const n of (letter.letter_numbers || []).filter(Boolean)) {
-        await db.execute({ sql: 'INSERT OR IGNORE INTO letter_number_suggestions (letter_number) VALUES (?)', args: [n] });
-        await db.execute({ sql: 'UPDATE letter_number_suggestions SET use_count=use_count+1 WHERE letter_number=?', args: [n] });
-      }
-
-      for (const [idx, addr] of (letter.addresses || []).entries()) {
-        const txt = typeof addr === 'string' ? addr : addr.address_text;
-        if (!txt) continue;
-        const norm = txt.trim().split('\n').map(l => l.trim()).filter(Boolean).join('\n');
-        await db.execute({ sql: 'INSERT INTO addresses (letter_id, address_text, address_order) VALUES (?,?,?)', args: [letterId, norm, idx] });
-        await db.execute({ sql: 'INSERT OR IGNORE INTO address_suggestions (address_text, use_count) VALUES (?,1)', args: [norm] });
-        await db.execute({ sql: 'UPDATE address_suggestions SET use_count=use_count+1 WHERE address_text=?', args: [norm] });
-      }
-    }
-
-    res.status(201).json({ id: recordId, serial_number: serial });
+    const { id, serial } = await insertRecord(db, { date, area: distribution_area, description, status: recStatus, userId: req.user.id });
+    await insertLetters(db, id, letters);
+    res.status(201).json({ id, serial_number: recStatus === 'draft' ? null : serial, status: recStatus });
   } catch(err) { console.error(err); res.status(500).json({ error: 'Save failed: ' + err.message }); }
 });
 
-// ── PUT update (creates new record) ──
+// ── PUT update ──
+//  • ড্রাফট রেকর্ড  → একই রেকর্ডে ইন-প্লেস আপডেট (যতবার ইচ্ছা)। 'published' পাঠালে তখনই সিরিয়াল তৈরি।
+//  • প্রকাশিত রেকর্ড → আগের মতোই নতুন রেকর্ড তৈরি (পুরনোটি থাকে)
 router.put('/:id', authMiddleware, async (req, res) => {
   const db = getDb();
   const existing = await db.execute({ sql: 'SELECT * FROM records WHERE id = ?', args: [req.params.id] });
@@ -157,40 +187,45 @@ router.put('/:id', authMiddleware, async (req, res) => {
   }
 
   const { date, distribution_area, description, letters, status } = req.body;
+  const newStatus = status === 'draft' ? 'draft' : 'published';
+  const newDate   = date || record.date;
+  const newArea   = distribution_area || record.distribution_area;
+  const newDesc   = description !== undefined ? description : record.description;
+
   try {
-    const serial    = await nextSerial(db);
-    const newStatus = status === 'draft' ? 'draft' : 'published';
-
-    const recResult = await db.execute({
-      sql:  'INSERT INTO records (serial_number, date, distribution_area, description, status, created_by) VALUES (?,?,?,?,?,?)',
-      args: [serial, date || record.date, distribution_area || record.distribution_area, description !== undefined ? description : record.description, newStatus, req.user.id]
-    });
-    const newId = Number(recResult.lastInsertRowid);
-
-    for (const letter of (letters || [])) {
-      const numStr  = Array.isArray(letter.letter_numbers) ? letter.letter_numbers.join('\n') : (letter.letter_number || '');
-      const dateStr = Array.isArray(letter.letter_dates)   ? letter.letter_dates.join('\n')   : (letter.letter_date  || '');
-      const ltStr   = JSON.stringify(letter.letter_types || (letter.letter_type ? [letter.letter_type] : []));
-
-      const lResult = await db.execute({ sql: 'INSERT INTO letters (record_id, letter_number, letter_date, letter_type) VALUES (?,?,?,?)', args: [newId, numStr, dateStr, ltStr] });
-      const lid = Number(lResult.lastInsertRowid);
-
-      for (const [idx, addr] of (letter.addresses || []).entries()) {
-        const txt = typeof addr === 'string' ? addr : addr.address_text;
-        if (!txt) continue;
-        await db.execute({ sql: 'INSERT INTO addresses (letter_id, address_text, address_order) VALUES (?,?,?)', args: [lid, txt, idx] });
-        await db.execute({ sql: 'INSERT OR IGNORE INTO address_suggestions (address_text) VALUES (?)', args: [txt] });
-      }
+    if (record.status === 'draft') {
+      const recordId = Number(record.id);
+      let serial = record.serial_number;
+      if (newStatus === 'published') serial = await nextSerial(db);   // প্রকাশের সময়ই আইডি
+      await db.execute({
+        sql: "UPDATE records SET serial_number=?, date=?, distribution_area=?, description=?, status=?, updated_at=datetime('now') WHERE id=?",
+        args: [serial, newDate, newArea, newDesc || '', newStatus, recordId]
+      });
+      await clearLetters(db, recordId);
+      await insertLetters(db, recordId, letters);
+      return res.json({ message: newStatus === 'draft' ? 'Draft updated' : 'Published', id: recordId, serial_number: newStatus === 'draft' ? null : serial, status: newStatus });
     }
-    res.json({ message: 'New record created from edit', id: newId, serial_number: serial });
+
+    // প্রকাশিত রেকর্ডের ইডিট → নতুন রেকর্ড
+    const { id: newId, serial } = await insertRecord(db, { date: newDate, area: newArea, description: newDesc, status: newStatus, userId: req.user.id });
+    await insertLetters(db, newId, letters);
+    res.json({ message: 'New record created from edit', id: newId, serial_number: newStatus === 'draft' ? null : serial, status: newStatus });
   } catch(err) { res.status(500).json({ error: 'Update failed: ' + err.message }); }
 });
 
-// ── PATCH publish ──
+// ── PATCH publish — এখানেই প্রথম সিরিয়াল তৈরি হয় ──
 router.patch('/:id/publish', authMiddleware, async (req, res) => {
+  const db = getDb();
   try {
-    await getDb().execute({ sql: "UPDATE records SET status='published', updated_at=datetime('now') WHERE id=?", args: [req.params.id] });
-    res.json({ message: 'Published' });
+    const row = await db.execute({ sql: 'SELECT id, status, serial_number FROM records WHERE id=?', args: [req.params.id] });
+    const rec = row.rows[0];
+    if (!rec) return res.status(404).json({ error: 'Record not found' });
+    if (rec.status !== 'draft' && !isDraftSerial(rec.serial_number))
+      return res.json({ message: 'Already published', serial_number: rec.serial_number });
+
+    const serial = await nextSerial(db);
+    await db.execute({ sql: "UPDATE records SET serial_number=?, status='published', updated_at=datetime('now') WHERE id=?", args: [serial, rec.id] });
+    res.json({ message: 'Published', serial_number: serial });
   } catch(err) { res.status(500).json({ error: err.message }); }
 });
 

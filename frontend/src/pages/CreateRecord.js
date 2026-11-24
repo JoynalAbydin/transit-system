@@ -201,7 +201,7 @@ export default function CreateRecord() {
         }))
       });
       if (status === 'draft') {
-        toast.success(`ড্রাফট সংরক্ষিত: ${res.data.serial_number}`);
+        toast.success('ড্রাফট সংরক্ষিত হয়েছে — প্রকাশ করলে ট্রানজিট নম্বর তৈরি হবে');
       } else {
         toast.success(`তৈরি হয়েছে: ${res.data.serial_number}`);
       }
