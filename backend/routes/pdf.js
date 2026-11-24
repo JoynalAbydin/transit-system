@@ -57,11 +57,11 @@ async function fetchFull(db, recordId) {
   return { ...record, letters };
 }
 
-function generateTransitHTML(record, letters, rowsPerPage = 6) {
+function generateTransitHTML(record, letters, rowsPerPage = 6, mergeAcrossRecords = false) {
   const RPP = [5,6,7,10,11,12].includes(Number(rowsPerPage)) ? Number(rowsPerPage) : 6;
 
   // একই ঠিকানার চিঠি একটি রো-তে মিলিয়ে আসে
-  const rows = buildRows(letters).map((r, i) => ({ serial: i + 1, nums: r.nums, dates: r.dates, address: r.address }));
+  const rows = buildRows(letters, mergeAcrossRecords).map((r, i) => ({ serial: i + 1, nums: r.nums, dates: r.dates, address: r.address }));
   while (rows.length < RPP || rows.length % RPP !== 0) {
     rows.push({ serial: null, nums: [], dates: [], address: '' });
   }
@@ -288,9 +288,9 @@ function generateTransitHTML(record, letters, rowsPerPage = 6) {
 //     তাই PDF-এর margin ০ থাকলেও (Puppeteer/PDFShift) ঠিক থাকে
 // অন্য কোনো ফাংশন বা PDF এর সাথে এর কোনো সম্পর্ক নেই।
 // ──────────────────────────────────────────────────────────────────────────
-function generateSignalTransitHTML(record, letters) {
+function generateSignalTransitHTML(record, letters, mergeAcrossRecords = false) {
   // একই ঠিকানার চিঠি একটি রো-তে মিলিয়ে আসে
-  const rows = buildRows(letters).map((r, i) => ({ serial: i + 1, nums: r.nums, dates: r.dates, address: r.address }));
+  const rows = buildRows(letters, mergeAcrossRecords).map((r, i) => ({ serial: i + 1, nums: r.nums, dates: r.dates, address: r.address }));
   const dateBn = formatDateBn(record.date);
 
   /* ← এই লাইনগুলো বদলে ফাঁকা/সাইজ ঠিক করুন */
@@ -387,9 +387,9 @@ function generateSignalTransitHTML(record, letters) {
   return `<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><style>${css}</style></head><body>${html}</body></html>`;
 }
 
-function generateEnvelopeHTML(record, letters) {
+function generateEnvelopeHTML(record, letters, mergeAcrossRecords = false) {
   // একই ঠিকানার চিঠি একটি ইনভেলাপে মিলিয়ে আসে
-  const envs = buildRows(letters);
+  const envs = buildRows(letters, mergeAcrossRecords);
   if (!envs.length) envs.push({ nums:[''], dates:[''], address:'' });
 
   const envsHTML = envs.map(e => {
@@ -591,7 +591,8 @@ router.get('/transit/:id', authMiddleware, async (req, res) => {
 router.post('/transit/merge', authMiddleware, async (req, res) => {
   try {
     const db = getDb();
-    const { record_ids, rows, mode } = req.body;
+    const { record_ids, rows, mode, merge_same_address } = req.body;
+    const mergeSame = merge_same_address === true;   // ডিফল্ট: আলাদা রেকর্ডের একই ঠিকানা আলাদা থাকবে
     if (!record_ids || !Array.isArray(record_ids) || record_ids.length === 0)
       return res.status(400).json({ error: 'record_ids array required' });
 
@@ -609,8 +610,8 @@ router.post('/transit/merge', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'কোনো তথ্য পাওয়া যায়নি' });
 
     const html = mode === 'signal'
-      ? generateSignalTransitHTML(headRecord, allLetters)
-      : generateTransitHTML(headRecord, allLetters, parseInt(rows) || 6);
+      ? generateSignalTransitHTML(headRecord, allLetters, mergeSame)
+      : generateTransitHTML(headRecord, allLetters, parseInt(rows) || 6, mergeSame);
     const pdf  = await htmlToPdf(html, { landscape: false });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="merged-transit.pdf"');
@@ -627,10 +628,7 @@ router.get('/envelope/:id', authMiddleware, async (req, res) => {
   try {
     const record = await fetchFull(getDb(), req.params.id);
     if (!record) return res.status(404).json({ error: 'Not found' });
-    // "ইনভেলাপ হয়ে গেছে" চিহ্নিত চিঠি বাদ
-    const pending = record.letters.filter(l => !l.envelope_done);
-    if (!pending.length) return res.status(400).json({ error: 'এই রেকর্ডের সব চিঠির ইনভেলাপ আগেই হয়ে গেছে' });
-    const html = generateEnvelopeHTML(record, pending);
+    const html = generateEnvelopeHTML(record, record.letters);
     const pdf  = await htmlToPdf(html, { landscape: true });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="envelope-${record.serial_number}.pdf"`);
@@ -646,9 +644,10 @@ router.get('/envelope/:id', authMiddleware, async (req, res) => {
 router.post('/envelope/merge', authMiddleware, async (req, res) => {
   try {
     const db = getDb();
-    const { record_ids } = req.body;
+    const { record_ids, merge_same_address } = req.body;
     if (!record_ids || !Array.isArray(record_ids) || record_ids.length === 0)
       return res.status(400).json({ error: 'record_ids array required' });
+    const mergeSame = merge_same_address === true;   // ডিফল্ট: আলাদা রেকর্ডের একই ঠিকানা আলাদা থাকবে
 
     const allLetters = [];
     const recordDates = [];
@@ -657,13 +656,13 @@ router.post('/envelope/merge', authMiddleware, async (req, res) => {
       const record = await fetchFull(db, rid);
       if (!record) continue;
       recordDates.push(record.date);
-      allLetters.push(...record.letters.filter(l => !l.envelope_done));   // হয়ে যাওয়া চিঠি বাদ
+      allLetters.push(...record.letters);
     }
 
     if (allLetters.length === 0)
-      return res.status(404).json({ error: 'ইনভেলাপের জন্য কোনো বাকি চিঠি নেই (সব "ইনভেলাপ হয়ে গেছে" চিহ্নিত)' });
+      return res.status(404).json({ error: 'কোনো তথ্য পাওয়া যায়নি' });
 
-    const html = generateEnvelopeHTML({ date: recordDates[0] || '' }, allLetters);
+    const html = generateEnvelopeHTML({ date: recordDates[0] || '' }, allLetters, mergeSame);
     const pdf  = await htmlToPdf(html, { landscape: true });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="merged-envelope.pdf"`);

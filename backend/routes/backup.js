@@ -59,7 +59,7 @@ router.post('/restore', authMiddleware, adminMiddleware, async (req, res) => {
       await db.execute({ sql: `INSERT OR IGNORE INTO records (id,serial_number,date,distribution_area,description,status,created_by,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)`, args: [r.id, r.serial_number, r.date, r.distribution_area, r.description, r.status||'published', r.created_by, r.created_at, r.updated_at] });
     }
     for (const l of (letters || [])) {
-      await db.execute({ sql: 'INSERT OR IGNORE INTO letters (id,record_id,letter_number,letter_date,letter_type,envelope_done) VALUES (?,?,?,?,?,?)', args: [l.id, l.record_id, l.letter_number, l.letter_date, l.letter_type||'', l.envelope_done ? 1 : 0] });
+      await db.execute({ sql: 'INSERT OR IGNORE INTO letters (id,record_id,letter_number,letter_date,letter_type) VALUES (?,?,?,?,?)', args: [l.id, l.record_id, l.letter_number, l.letter_date, l.letter_type||''] });
     }
     for (const a of (addresses || [])) {
       await db.execute({ sql: 'INSERT OR IGNORE INTO addresses (id,letter_id,address_text,address_order) VALUES (?,?,?,?)', args: [a.id, a.letter_id, a.address_text, a.address_order] });

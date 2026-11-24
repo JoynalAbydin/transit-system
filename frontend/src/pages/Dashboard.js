@@ -76,14 +76,16 @@ function TransitRowDropdown({ recId, recSerial, pdfLoading, onDownload }) {
   );
 }
 
-// blob response-এর error থেকে সার্ভারের বার্তা বের করে (না পেলে fallback)
-async function errMessage(err, fallback) {
-  try {
-    const d = err?.response?.data;
-    if (d instanceof Blob) { const j = JSON.parse(await d.text()); if (j?.error) return j.error; }
-    else if (d?.error) return d.error;
-  } catch {}
-  return fallback;
+// মার্জ বারের "একই ঠিকানা একত্র" শর্ত বাটন (টিক দিলে আলাদা রেকর্ডের একই ঠিকানা এক রো/ইনভেলাপে আসে)
+function MergeSameToggle({ checked, onChange }) {
+  return (
+    <label title="টিক দিলে নির্বাচিত আলাদা রেকর্ডের একই ঠিকানা একটি রো/ইনভেলাপে আসবে এবং স্মারক ক, খ, গ… ক্রমে যুক্ত হবে। বন্ধ থাকলে প্রতিটি রেকর্ডের ঠিকানা আলাদা থাকবে।"
+      className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer select-none transition-all border
+        ${checked ? 'bg-yellow-300 text-blue-900 border-yellow-400' : 'bg-white/15 text-white border-white/30 hover:bg-white/25'}`}>
+      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="w-3.5 h-3.5 accent-blue-700" />
+      🔗 একই ঠিকানা একত্র
+    </label>
+  );
 }
 
 // ── Envelope Preview Modal ─────────────────────────────────────────────────
@@ -125,18 +127,8 @@ function EnvelopePreviewModal({ rec, onClose }) {
   }
 
   // Collect all envelopes from all letters
-  // "ইনভেলাপ হয়ে গেছে" চিহ্নিত চিঠি বাদ; বাকিগুলোর একই ঠিকানা একটি ইনভেলাপে মিলিয়ে দেখানো হয়
-  const allLetters = data?.letters || [];
-  const doneCount  = allLetters.filter(l => l.envelope_done).length;
-  const envelopes  = groupByAddress(allLetters.filter(l => !l.envelope_done));
-
-  const toggleDone = async (letter) => {
-    const done = !letter.envelope_done;
-    try {
-      await axios.patch(`/api/records/letters/${letter.id}/envelope-done`, { done });
-      setData(d => ({ ...d, letters: d.letters.map(l => l.id === letter.id ? { ...l, envelope_done: done ? 1 : 0 } : l) }));
-    } catch { toast.error('চিহ্ন দিতে সমস্যা'); }
-  };
+  // একই ঠিকানার চিঠি একটি ইনভেলাপে মিলিয়ে দেখানো হয়
+  const envelopes = data?.letters ? groupByAddress(data.letters) : [];
 
   return createPortal(
     <div
@@ -180,38 +172,10 @@ function EnvelopePreviewModal({ rec, onClose }) {
               <div className="spinner"></div>
               <p className="text-gray-400 text-sm">লোড হচ্ছে...</p>
             </div>
-          ) : (
-            <>
-            {/* চিঠির তালিকা: ম্যানুয়াল "ইনভেলাপ হয়ে গেছে" চিহ্ন */}
-            {allLetters.length > 0 && (
-              <div className="mb-5 border border-gray-200 rounded-xl overflow-hidden">
-                <div className="bg-gray-50 px-4 py-2 text-xs font-semibold text-gray-600 border-b border-gray-200">
-                  ✅ যেসব চিঠির ইনভেলাপ আগেই হয়ে গেছে সেগুলোতে টিক দিন — ইনভেলাপ ডাউনলোডে বাদ যাবে (ট্রানজিটে সবই থাকবে)
-                </div>
-                <div className="divide-y divide-gray-100">
-                  {allLetters.map(l => {
-                    const nums = (l.letter_numbers || []).join(', ') || '—';
-                    const addrs = (l.addresses || []).map(a => String(a.address_text || '').split('\n')[0]).join(' • ');
-                    return (
-                      <label key={l.id} className={`flex items-start gap-3 px-4 py-2 cursor-pointer hover:bg-gray-50 ${l.envelope_done ? 'bg-green-50/60' : ''}`}>
-                        <input type="checkbox" checked={!!l.envelope_done} onChange={() => toggleDone(l)}
-                          className="mt-1 w-4 h-4 accent-green-600 flex-shrink-0" />
-                        <div className="min-w-0">
-                          <div className={`text-sm ${l.envelope_done ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{nums}</div>
-                          <div className="text-xs text-gray-400 truncate">{addrs}</div>
-                        </div>
-                        {!!l.envelope_done && <span className="ml-auto text-xs text-green-700 bg-green-100 px-2 py-0.5 rounded-lg flex-shrink-0">ইনভেলাপ হয়েছে</span>}
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {envelopes.length === 0 ? (
+          ) : envelopes.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
               <div className="text-5xl mb-3">📭</div>
-              <p>{allLetters.length > 0 && doneCount === allLetters.length ? 'সব চিঠির ইনভেলাপ হয়ে গেছে' : 'কোনো ঠিকানা পাওয়া যায়নি'}</p>
+              <p>কোনো ঠিকানা পাওয়া যায়নি</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4">
@@ -244,15 +208,13 @@ function EnvelopePreviewModal({ rec, onClose }) {
                 );
               })}
             </div>
-            )}
-            </>
           )}
         </div>
 
         {/* Modal footer */}
         {!loading && envelopes.length > 0 && (
           <div className="px-6 py-3 border-t border-gray-100 flex items-center justify-between flex-shrink-0 bg-gray-50">
-            <span className="text-xs text-gray-400">ইনভেলাপ হবে {toBanglaNumber(envelopes.length)} টি{doneCount > 0 ? ` (${toBanglaNumber(doneCount)} টি চিঠি বাদ — আগেই হয়েছে)` : ''}</span>
+            <span className="text-xs text-gray-400">মোট {toBanglaNumber(envelopes.length)} টি ঠিকানা</span>
             <button onClick={onClose}
               className="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm px-4 py-1.5 rounded-lg transition-all">
               ✕ বন্ধ করুন
@@ -282,6 +244,9 @@ export default function Dashboard() {
   const [transitSelected, setTransitSelected] = useState([]);
   const [transitRows, setTransitRows] = useState(6);
   const [mergingTransit, setMergingTransit]   = useState(false);
+  // মার্জে "একই ঠিকানা একত্র" শর্ত — ডিফল্ট বন্ধ (আলাদা রেকর্ডের ঠিকানা আলাদা থাকে)
+  const [transitMergeSame, setTransitMergeSame] = useState(false);
+  const [envMergeSame, setEnvMergeSame]         = useState(false);
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
@@ -325,7 +290,7 @@ export default function Dashboard() {
       a.href = url; a.download = `${type}${suffix}-${serial}.pdf`; a.click();
       URL.revokeObjectURL(url);
       toast.success('PDF ডাউনলোড শুরু হয়েছে');
-    } catch (err) { toast.error(await errMessage(err, 'PDF তৈরিতে সমস্যা')); }
+    } catch { toast.error('PDF তৈরিতে সমস্যা'); }
     finally { setPdfLoad(p => ({ ...p, [key]: false })); }
   };
 
@@ -344,14 +309,14 @@ export default function Dashboard() {
     if (!ids || ids.length === 0) { toast.error('কমপক্ষে একটি রেকর্ড নির্বাচন করুন'); return; }
     setMerging(true);
     try {
-      const res = await axios.post('/api/pdf/envelope/merge', { record_ids: ids }, { responseType: 'blob' });
+      const res = await axios.post('/api/pdf/envelope/merge', { record_ids: ids, merge_same_address: envMergeSame }, { responseType: 'blob' });
       const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
       const a   = document.createElement('a');
       a.href = url; a.download = `merged-envelope-${ids.length}records.pdf`; a.click();
       URL.revokeObjectURL(url);
       toast.success(`${toBanglaNumber(ids.length)} টি রেকর্ডের ইনভেলাপ ডাউনলোড হচ্ছে`);
-      setEnvSelected([]);
-    } catch (err) { toast.error(await errMessage(err, 'মার্জ ইনভেলাপ তৈরিতে সমস্যা')); }
+      setEnvSelected([]); setEnvMergeSame(false);
+    } catch { toast.error('মার্জ ইনভেলাপ তৈরিতে সমস্যা'); }
     finally { setMerging(false); }
   };
 
@@ -361,7 +326,7 @@ export default function Dashboard() {
     if (transitSelected.length === 0) { toast.error('কমপক্ষে একটি রেকর্ড নির্বাচন করুন'); return; }
     setMergingTransit(true);
     try {
-      const body = { record_ids: transitSelected };
+      const body = { record_ids: transitSelected, merge_same_address: transitMergeSame };
       if (transitRows === 'signal') body.mode = 'signal'; else body.rows = transitRows;
       const res = await axios.post('/api/pdf/transit/merge', body, { responseType: 'blob' });
       const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
@@ -369,7 +334,7 @@ export default function Dashboard() {
       a.href = url; a.download = `merged-transit-${transitSelected.length}records.pdf`; a.click();
       URL.revokeObjectURL(url);
       toast.success(`${toBanglaNumber(transitSelected.length)} টি রেকর্ড একটি ট্রানজিটে ডাউনলোড হচ্ছে`);
-      setTransitSelected([]);
+      setTransitSelected([]); setTransitMergeSame(false);
     } catch { toast.error('মার্জ ট্রানজিট তৈরিতে সমস্যা'); }
     finally { setMergingTransit(false); }
   };
@@ -425,7 +390,8 @@ export default function Dashboard() {
               {TRANSIT_ROW_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               <option value="signal">📡 Signal Transit</option>
             </select>
-            <button onClick={() => setTransitSelected([])} className="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1.5 rounded-lg transition-all">✕ বাতিল</button>
+            <MergeSameToggle checked={transitMergeSame} onChange={setTransitMergeSame} />
+            <button onClick={() => { setTransitSelected([]); setTransitMergeSame(false); }} className="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1.5 rounded-lg transition-all">✕ বাতিল</button>
             <button onClick={downloadMergedTransit} disabled={mergingTransit}
               className="bg-white text-blue-700 font-bold text-xs px-4 py-1.5 rounded-lg hover:bg-blue-50 transition-all disabled:opacity-50 flex items-center gap-2 shadow">
               {mergingTransit ? <><div className="w-3 h-3 border-2 border-blue-200 border-t-blue-700 rounded-full animate-spin"></div> তৈরি হচ্ছে...</> : '📄 ডাউনলোড করুন'}
@@ -442,7 +408,8 @@ export default function Dashboard() {
             <span className="font-medium text-sm">টি ইনভেলাপ নির্বাচিত — একটি PDF এ ডাউনলোড করুন</span>
           </div>
           <div className="flex gap-3">
-            <button onClick={() => setEnvSelected([])} className="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1.5 rounded-lg transition-all">✕ বাতিল</button>
+            <MergeSameToggle checked={envMergeSame} onChange={setEnvMergeSame} />
+            <button onClick={() => { setEnvSelected([]); setEnvMergeSame(false); }} className="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1.5 rounded-lg transition-all">✕ বাতিল</button>
             <button onClick={() => downloadMergedEnvelope(envSelected)} disabled={merging}
               className="bg-white text-indigo-700 font-bold text-xs px-4 py-1.5 rounded-lg hover:bg-indigo-50 transition-all disabled:opacity-50 flex items-center gap-2 shadow">
               {merging ? <><div className="w-3 h-3 border-2 border-indigo-200 border-t-indigo-700 rounded-full animate-spin"></div> তৈরি হচ্ছে...</> : '✉️ ডাউনলোড করুন'}

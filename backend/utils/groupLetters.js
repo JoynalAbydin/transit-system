@@ -12,11 +12,14 @@ function normalizeAddress(text) {
 }
 
 /**
- * letters: fetchFull() থেকে পাওয়া letters অ্যারে (একাধিক রেকর্ডের letters একসাথেও হতে পারে)
+ * letters: fetchFull() থেকে পাওয়া letters অ্যারে (মার্জের সময় একাধিক রেকর্ডের letters একসাথে)
+ * mergeAcrossRecords:
+ *   false (ডিফল্ট) → একই রেকর্ডের ভেতরে একই ঠিকানা সবসময় ১টি; কিন্তু আলাদা রেকর্ডের একই ঠিকানা আলাদা রো/ইনভেলাপ
+ *   true           → আলাদা রেকর্ডের একই ঠিকানাও ১টি (শুধু মার্জে "একই ঠিকানা একত্র" টিক দিলে)
  * রিটার্ন: [{ nums, dates, address, letter_type }]  — প্রতিটি আলাদা ঠিকানার জন্য ১টি
  * ঠিকানা প্রথম যেখানে এসেছে রো সেই জায়গাতেই থাকে।
  */
-function buildRows(letters) {
+function buildRows(letters, mergeAcrossRecords = false) {
   const byKey = new Map();
   const groups = [];
 
@@ -26,7 +29,8 @@ function buildRows(letters) {
 
     for (const addr of (letter.addresses || [])) {
       const text = addr.address_text || '';
-      const key  = normalizeAddress(text);
+      const base = normalizeAddress(text);
+      const key  = base && !mergeAcrossRecords ? `${letter.record_id}|${base}` : base;
 
       let g = key ? byKey.get(key) : null;
       if (!g) {
