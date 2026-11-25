@@ -3,24 +3,123 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Contact | ট্রানজিট ব্যবস্থাপনা</title>
+  <title>যোগাযোগ | ট্রানজিট ব্যবস্থাপনা</title>
+  <meta name="description" content="অটোমেটেড চিঠি ডিসপ্যাচ সিস্টেম সম্পর্কে প্রশ্ন, সমস্যা বা পরামর্শ পাঠান।">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
-  <header class="site-header"><div class="inner"><h1>ট্রানজিট ব্যবস্থাপনা</h1></div></header>
-
-  <main class="site-main">
-    <div class="inner">
-      <h2>যোগাযোগ</h2>
-      <!-- এখানে Contact পেজের টেক্সট ও ডিজাইন পরে যোগ হবে -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="./" aria-label="ট্রানজিট ব্যবস্থাপনা — হোম">
+        <span class="brand-mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
+        <span class="brand-text"><strong>ট্রানজিট ব্যবস্থাপনা</strong><small>অটোমেটেড চিঠি ডিসপ্যাচ সিস্টেম</small></span>
+      </a>
+      <button class="nav-toggle" aria-label="মেনু খুলুন" aria-expanded="false" aria-controls="site-nav">☰</button>
+      <nav id="site-nav" class="site-nav" aria-label="প্রধান মেনু">
+        <a href="./">Home</a>
+        <a href="about.html">About</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html" class="active">Contact</a>
+        <a href="./" class="cta">সিস্টেমে প্রবেশ →</a>
+      </nav>
     </div>
+  </header>
+
+  <main>
+
+    <section class="hero small">
+      <div class="container">
+        <span class="eyebrow">✉️ যোগাযোগ</span>
+        <h1>আপনার প্রশ্ন, সমস্যা বা পরামর্শ জানান</h1>
+        <p class="lead">নিচের ফর্মটি পূরণ করে পাঠান। বার্তাটি সরাসরি সিস্টেম পরিচালকের ইনবক্সে পৌঁছাবে।</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container contact-wrap">
+
+        <div class="form-card">
+          <h2>বার্তা পাঠান</h2>
+          <p class="sub"><span style="color:var(--red)">*</span> চিহ্নিত ঘরগুলো পূরণ করা আবশ্যক।</p>
+
+          <form id="contact-form" novalidate autocomplete="on">
+            <!-- স্প্যাম ফাঁদ: সাধারণ ব্যবহারকারী এটি দেখে না -->
+            <div class="hp" aria-hidden="true"><label>ওয়েবসাইট<input type="text" id="f-website" tabindex="-1" autocomplete="off"></label></div>
+
+            <div class="row2">
+              <div class="field">
+                <label class="lbl" for="f-name">আপনার নাম <span class="req">*</span></label>
+                <input id="f-name" name="name" type="text" placeholder="পূর্ণ নাম" autocomplete="name" required>
+                <div class="err">নাম লিখুন (কমপক্ষে ২ অক্ষর)।</div>
+              </div>
+              <div class="field">
+                <label class="lbl" for="f-email">আপনার ইমেইল <span class="req">*</span></label>
+                <input id="f-email" name="email" type="email" placeholder="example@mail.com" autocomplete="email" required>
+                <div class="err">সঠিক ইমেইল ঠিকানা দিন।</div>
+              </div>
+            </div>
+
+            <div class="row2">
+              <div class="field">
+                <label class="lbl" for="f-phone">ফোন (ঐচ্ছিক)</label>
+                <input id="f-phone" name="phone" type="tel" placeholder="01XXXXXXXXX" autocomplete="tel">
+              </div>
+              <div class="field">
+                <label class="lbl" for="f-topic">বিষয়</label>
+                <select id="f-topic" name="topic">
+                  <option>সাধারণ প্রশ্ন</option>
+                  <option>সমস্যা / ত্রুটি জানানো</option>
+                  <option>নতুন সুবিধার পরামর্শ</option>
+                  <option>অ্যাকাউন্ট / পাসওয়ার্ড</option>
+                  <option>অন্যান্য</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="lbl" for="f-message">আপনার বার্তা <span class="req">*</span></label>
+              <textarea id="f-message" name="message" placeholder="যা জানাতে চান বিস্তারিত লিখুন… সমস্যা হলে কোন পেজে, কী করতে গিয়ে হয়েছে সেটিও লিখুন।" required></textarea>
+              <div class="char"><span></span><span id="msg-count">0 / 2000</span></div>
+              <div class="err">বার্তা কমপক্ষে ১০ অক্ষরের হতে হবে।</div>
+            </div>
+
+            <button id="send-btn" class="btn btn-navy" type="submit"><span class="spinner" aria-hidden="true"></span><span>বার্তা পাঠান ➤</span></button>
+            <div id="form-status" class="status" role="status" aria-live="polite"></div>
+            <noscript><div class="status show bad">বার্তা পাঠাতে ব্রাউজারে JavaScript চালু থাকতে হবে।</div></noscript>
+          </form>
+        </div>
+
+        <aside>
+          <div class="side-card">
+            <h3>📝 ভালো উত্তর পেতে</h3>
+            <ul>
+              <li>সমস্যা হলে কোন পেজে ও কোন বাটনে হয়েছে লিখুন।</li>
+              <li>ত্রুটির বার্তা (লাল/সবুজ নোটিশ) থাকলে হুবহু লিখুন।</li>
+              <li>ট্রানজিট নম্বর জানালে খুঁজে পেতে সুবিধা হয়। কিন্তু গোপনীয় ঠিকানা বা চিঠির বিষয়বস্তু লিখবেন না।</li>
+            </ul>
+          </div>
+          <div class="side-card">
+            <h3>❓ আগে দেখে নিন</h3>
+            <p style="color:#475569;font-size:.93rem;margin-bottom:10px">অনেক সাধারণ সমস্যার সমাধান ব্লগের FAQ অংশে আছে — লগইন, ট্রানজিট নম্বর, মার্জ, প্রিন্টসহ।</p>
+            <a class="btn btn-outline" href="blog.html#faq" style="padding:8px 16px;font-size:.9rem">FAQ দেখুন →</a>
+          </div>
+          <div class="side-card">
+            <h3>🔒 গোপনীয়তা</h3>
+            <p style="color:#475569;font-size:.93rem">আপনার নাম ও ইমেইল শুধু বার্তার উত্তর দেওয়ার জন্য ব্যবহৃত হয়।</p>
+          </div>
+        </aside>
+
+      </div>
+    </section>
+
   </main>
 
   <footer class="site-footer">
-    <div class="inner">
-      <nav>
+    <div class="container">
+      <nav aria-label="ফুটার মেনু">
         <a href="./">Home</a>
         <a href="about.html">About</a>
         <a href="blog.html">Blog</a>

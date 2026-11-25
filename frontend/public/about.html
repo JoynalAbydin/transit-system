@@ -3,24 +3,183 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>About | ট্রানজিট ব্যবস্থাপনা</title>
+  <title>আমাদের সম্পর্কে | ট্রানজিট ব্যবস্থাপনা</title>
+  <meta name="description" content="অটোমেটেড চিঠি ডিসপ্যাচ ব্যবস্থাপনা সিস্টেম — চিঠি পাঠানো ও রেকর্ড ব্যবস্থাপনার পরিচিতি।">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
-  <header class="site-header"><div class="inner"><h1>ট্রানজিট ব্যবস্থাপনা</h1></div></header>
-
-  <main class="site-main">
-    <div class="inner">
-      <h2>আমাদের সম্পর্কে</h2>
-      <!-- এখানে About পেজের টেক্সট ও ডিজাইন পরে যোগ হবে -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="./" aria-label="ট্রানজিট ব্যবস্থাপনা — হোম">
+        <span class="brand-mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
+        <span class="brand-text"><strong>ট্রানজিট ব্যবস্থাপনা</strong><small>অটোমেটেড চিঠি ডিসপ্যাচ সিস্টেম</small></span>
+      </a>
+      <button class="nav-toggle" aria-label="মেনু খুলুন" aria-expanded="false" aria-controls="site-nav">☰</button>
+      <nav id="site-nav" class="site-nav" aria-label="প্রধান মেনু">
+        <a href="./">Home</a>
+        <a href="about.html" class="active">About</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html">Contact</a>
+        <a href="./" class="cta">সিস্টেমে প্রবেশ →</a>
+      </nav>
     </div>
+  </header>
+
+  <main>
+
+    <section class="hero">
+      <div class="container">
+        <span class="eyebrow">📮 অটোমেটেড লেটার ডিসপ্যাচ ম্যানেজমেন্ট সিস্টেম</span>
+        <h1>চিঠি পাঠানো ও রেকর্ড ব্যবস্থাপনা —<br>এখন সহজ, দ্রুত ও নির্ভুল</h1>
+        <p class="lead">চিঠির তথ্য একবার লিখলেই সিস্টেম নিজে থেকে রেকর্ড সংরক্ষণ করে, সিরিয়াল নম্বর দেয় এবং ছাপার উপযোগী ট্রানজিট স্লিপ ও ইনভেলাপ (খাম) তৈরি করে দেয়।</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="./">সিস্টেমে প্রবেশ করুন →</a>
+          <a class="btn btn-ghost" href="blog.html">কীভাবে কাজ করে পড়ুন</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <span class="kicker">সিস্টেম পরিচিতি</span>
+          <h2>এই সিস্টেমটি কী?</h2>
+          <p>এটি একটি ওয়েবভিত্তিক চিঠি ডিসপ্যাচ ব্যবস্থাপনা সিস্টেম। যেসব দপ্তরে প্রতিদিন বহু চিঠি বিভিন্ন ঠিকানায় পাঠাতে হয়, সেখানে হাতে লেখা খাতা ও বারবার একই তথ্য লেখার ঝামেলা কমাতে এটি তৈরি।</p>
+        </div>
+        <div class="flow" aria-label="কাজের ধারা">
+          <div class="node"><span class="e">✍️</span><b>তথ্য দিন</b><span class="s">পত্র নং, তারিখ, ঠিকানা</span></div>
+          <div class="arrow">➜</div>
+          <div class="node"><span class="e">🗂️</span><b>রেকর্ড</b><span class="s">সিরিয়াল সহ সংরক্ষণ</span></div>
+          <div class="arrow">➜</div>
+          <div class="node"><span class="e">📄</span><b>ট্রানজিট স্লিপ</b><span class="s">PDF স্বয়ংক্রিয়</span></div>
+          <div class="arrow">➜</div>
+          <div class="node"><span class="e">✉️</span><b>ইনভেলাপ</b><span class="s">ঠিকানা অনুযায়ী খাম</span></div>
+          <div class="arrow">➜</div>
+          <div class="node"><span class="e">🚚</span><b>ডিসপ্যাচ</b><span class="s">ছাপুন ও পাঠান</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section alt">
+      <div class="container">
+        <div class="section-head">
+          <span class="kicker">মূল কার্যক্রম</span>
+          <h2>সিস্টেম যা যা করে</h2>
+          <p>দুটি বড় কাজ — চিঠি পাঠানো এবং রেকর্ড ব্যবস্থাপনা — এবং এদের সহায়ক আরও কিছু স্বয়ংক্রিয় সুবিধা।</p>
+        </div>
+        <div class="grid grid-3">
+          <article class="card">
+            <div class="icon">📤</div>
+            <h3>চিঠি পাঠানো (ডিসপ্যাচ)</h3>
+            <p>প্রতিটি চিঠির জন্য ট্রানজিট স্লিপ ও ইনভেলাপ তৈরি হয়।</p>
+            <ul>
+              <li>প্রাপকের স্বাক্ষর ঘরসহ ট্রানজিট স্লিপ</li>
+              <li>প্রতি ঠিকানায় আলাদা ইনভেলাপ</li>
+              <li>প্রিন্টের জন্য প্রস্তুত PDF</li>
+            </ul>
+          </article>
+          <article class="card">
+            <div class="icon">🗃️</div>
+            <h3>রেকর্ড ব্যবস্থাপনা</h3>
+            <p>সব চিঠির তথ্য এক জায়গায় নিরাপদে জমা থাকে।</p>
+            <ul>
+              <li>স্বয়ংক্রিয় ট্রানজিট নম্বর (সিরিয়াল)</li>
+              <li>ড্রাফট সংরক্ষণ ও পরে প্রকাশ</li>
+              <li>পত্র নং, ঠিকানা বা এলাকা দিয়ে দ্রুত খোঁজা</li>
+            </ul>
+          </article>
+          <article class="card">
+            <div class="icon">🧠</div>
+            <h3>স্বয়ংক্রিয় ঠিকানা মেলানো</h3>
+            <p>একই ঠিকানায় একাধিক চিঠি গেলে সিস্টেম নিজেই এক রো/এক খামে মিলিয়ে দেয়, স্মারক সাজায় ক, খ, গ… ক্রমে।</p>
+          </article>
+          <article class="card">
+            <div class="icon">🔗</div>
+            <h3>একাধিক রেকর্ড একত্রে</h3>
+            <p>একাধিক রেকর্ডের ইনভেলাপ বা ট্রানজিট বেছে এক PDF-এ নামানো যায়। চাইলে আলাদা রেকর্ডের একই ঠিকানাও একত্র করা যায়।</p>
+          </article>
+          <article class="card">
+            <div class="icon">⚡</div>
+            <h3>স্মার্ট সাজেশন</h3>
+            <p>আগে ব্যবহার করা ঠিকানা ও পত্র নম্বর লেখার সময় নিজে থেকে সাজেশন হিসেবে আসে, ফলে বারবার টাইপ করতে হয় না।</p>
+          </article>
+          <article class="card">
+            <div class="icon">🛡️</div>
+            <h3>নিয়ন্ত্রণ ও নিরাপত্তা</h3>
+            <p>লগইন ছাড়া ব্যবহার করা যায় না। অ্যাডমিন ব্যবহারকারী পরিচালনা, পরিসংখ্যান দেখা এবং ব্যাকআপ/রিস্টোর করতে পারেন।</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <span class="kicker">কাজের ধারা</span>
+          <h2>পাঁচ ধাপে চিঠি ডিসপ্যাচ</h2>
+        </div>
+        <ol class="steps-list">
+          <li><b>লগইন করুন।</b> আপনার ইউজারনেম ও পাসওয়ার্ড দিয়ে সিস্টেমে ঢুকুন।</li>
+          <li><b>নতুন রেকর্ড তৈরি করুন।</b> তারিখ, বিতরণ এলাকা এবং প্রতিটি চিঠির পত্র নং, তারিখ ও ঠিকানা লিখুন। প্রস্তুত না হলে <span class="pill">ড্রাফট</span> করে রাখুন।</li>
+          <li><b>প্রকাশ করুন।</b> প্রকাশ করার মুহূর্তেই রেকর্ডটি একটি স্থায়ী ট্রানজিট নম্বর (যেমন <code>TMS-2026-0001</code>) পায়।</li>
+          <li><b>ট্রানজিট ও ইনভেলাপ নামান।</b> ড্যাশবোর্ড থেকে এক ক্লিকে, কিংবা একাধিক রেকর্ড বেছে একসাথে PDF নামান।</li>
+          <li><b>ছাপুন ও পাঠান।</b> প্রিন্ট করে স্বাক্ষর নিয়ে চিঠি ডিসপ্যাচ করুন।</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section alt">
+      <div class="container">
+        <div class="section-head">
+          <span class="kicker">কারা ব্যবহার করেন</span>
+          <h2>দুই ধরনের ব্যবহারকারী</h2>
+        </div>
+        <div class="grid grid-2">
+          <article class="card">
+            <div class="icon">👤</div>
+            <h3>সাধারণ ব্যবহারকারী</h3>
+            <ul>
+              <li>নতুন রেকর্ড তৈরি, ড্রাফট ও প্রকাশ</li>
+              <li>ট্রানজিট স্লিপ ও ইনভেলাপ ডাউনলোড</li>
+              <li>রেকর্ড খোঁজা, প্রিভিউ ও সম্পাদনা</li>
+              <li>নিজের পাসওয়ার্ড পরিবর্তন</li>
+            </ul>
+          </article>
+          <article class="card">
+            <div class="icon">🛡️</div>
+            <h3>অ্যাডমিন</h3>
+            <ul>
+              <li>সাধারণ ব্যবহারকারীর সব সুবিধা</li>
+              <li>ব্যবহারকারী যোগ, সম্পাদনা ও পাসওয়ার্ড রিসেট</li>
+              <li>পরিসংখ্যান: মোট ট্রানজিট, ইনভেলাপ ও ঠিকানা; এলাকা অনুযায়ী চার্ট</li>
+              <li>ব্যাকআপ ও রিস্টোর, রেকর্ড মুছে ফেলা</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="cta-band">
+          <h2>বিস্তারিত জানতে চান?</h2>
+          <p>প্রতিটি ফিচার কেন আছে, কীভাবে কাজ করে এবং কোথায় পাবেন — সবকিছু ব্লগ পেজে ধাপে ধাপে লেখা আছে। সাধারণ প্রশ্নের সমাধানও সেখানে পাবেন।</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="blog.html">ব্লগ পড়ুন</a>
+            <a class="btn btn-ghost" href="contact.html">যোগাযোগ করুন</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <footer class="site-footer">
-    <div class="inner">
-      <nav>
+    <div class="container">
+      <nav aria-label="ফুটার মেনু">
         <a href="./">Home</a>
         <a href="about.html" class="active">About</a>
         <a href="blog.html">Blog</a>

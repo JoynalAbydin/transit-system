@@ -3,24 +3,646 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Blog | ট্রানজিট ব্যবস্থাপনা</title>
+  <title>ব্লগ — সিস্টেম গাইড ও FAQ | ট্রানজিট ব্যবস্থাপনা</title>
+  <meta name="description" content="অটোমেটেড চিঠি ডিসপ্যাচ সিস্টেম কীভাবে কাজ করে — বিস্তারিত গাইড এবং সাধারণ প্রশ্নের সমাধান।">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
-  <header class="site-header"><div class="inner"><h1>ট্রানজিট ব্যবস্থাপনা</h1></div></header>
-
-  <main class="site-main">
-    <div class="inner">
-      <h2>ব্লগ</h2>
-      <!-- এখানে Blog পেজের টেক্সট ও ডিজাইন পরে যোগ হবে -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="./" aria-label="ট্রানজিট ব্যবস্থাপনা — হোম">
+        <span class="brand-mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
+        <span class="brand-text"><strong>ট্রানজিট ব্যবস্থাপনা</strong><small>অটোমেটেড চিঠি ডিসপ্যাচ সিস্টেম</small></span>
+      </a>
+      <button class="nav-toggle" aria-label="মেনু খুলুন" aria-expanded="false" aria-controls="site-nav">☰</button>
+      <nav id="site-nav" class="site-nav" aria-label="প্রধান মেনু">
+        <a href="./">Home</a>
+        <a href="about.html">About</a>
+        <a href="blog.html" class="active">Blog</a>
+        <a href="contact.html">Contact</a>
+        <a href="./" class="cta">সিস্টেমে প্রবেশ →</a>
+      </nav>
     </div>
+  </header>
+
+  <main>
+
+    <section class="hero small">
+      <div class="container">
+        <span class="eyebrow">📖 সিস্টেম গাইড</span>
+        <h1>কীভাবে কাজ করে — ধাপে ধাপে সবকিছু</h1>
+        <p class="lead">প্রতিটি ফিচার কেন আছে, কীভাবে কাজ করে এবং কোথায় পাবেন। যেকোনো বিষয়ের হেডিংয়ে চাপলে বিস্তারিত খুলবে। শেষে সাধারণ প্রশ্ন ও সমাধান আছে।</p>
+      </div>
+    </section>
+
+    <section class="section" id="blog-root">
+      <div class="container">
+
+        <div class="toolbar">
+          <div class="search"><input id="blog-search" type="search" placeholder="বিষয় বা প্রশ্ন খুঁজুন… (যেমন: ড্রাফট, মার্জ, ঠিকানা)" aria-label="খুঁজুন"></div>
+          <button class="btn btn-outline" id="open-all" type="button">সব খুলুন</button>
+          <button class="btn btn-outline" id="close-all" type="button">সব বন্ধ করুন</button>
+          <span class="count" id="blog-count" aria-live="polite"></span>
+        </div>
+
+        <div class="toc" id="toc" aria-label="বিষয়সূচি"></div>
+
+        <div class="group-block">
+          <h2 class="group-title" id="guide">📚 সিস্টেম গাইড</h2>
+          <p class="group-sub">কেন আছে ও কীভাবে কাজ করে — বিষয়ভিত্তিক বিবরণ।</p>
+          <div class="acc-list" data-toc="guide">
+        <details class="acc" id="flow">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>সিস্টেমের সামগ্রিক কাজের ধারা</h3><span class="acc-blurb">তথ্য একবার লিখলেই রেকর্ড, ট্রানজিট স্লিপ ও খাম — পুরো প্রবাহটি এক নজরে।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>কেন এভাবে তৈরি</h4>
+            <p>একই চিঠির তথ্য খাতায়, ট্রানজিটে এবং খামে— তিন জায়গায় হাতে লিখলে সময় যায় এবং ভুলের সুযোগ থাকে। এই সিস্টেমে তথ্য একবারই দিতে হয়; বাকি সব সিস্টেম নিজে তৈরি করে।</p>
+            <h4>মূল ধারণা: রেকর্ড ও এন্ট্রি</h4>
+            <ul>
+              <li><b>রেকর্ড</b> = একটি ব্যাচ। এতে থাকে তারিখ, বিতরণ এলাকা, বিবরণ এবং এক বা একাধিক এন্ট্রি।</li>
+              <li><b>এন্ট্রি</b> = একটি চিঠির তথ্য: এক বা একাধিক পত্র নং, পত্রের তারিখ, এক বা একাধিক ঠিকানা এবং চিঠির ধরন।</li>
+              <li>প্রতিটি <b>ঠিকানা</b> থেকে ট্রানজিটের একটি রো এবং একটি ইনভেলাপ তৈরি হয়।</li>
+            </ul>
+            <h4>ধাপগুলো</h4>
+            <ol>
+              <li>লগইন করুন।</li>
+              <li>“নতুন তৈরি” পেজে রেকর্ড লিখুন — চাইলে ড্রাফট, চাইলে সরাসরি প্রকাশ।</li>
+              <li>প্রকাশ হলে রেকর্ড একটি ট্রানজিট নম্বর পায় এবং ড্যাশবোর্ডে দেখা যায়।</li>
+              <li>ড্যাশবোর্ড থেকে ট্রানজিট বা ইনভেলাপের PDF নামান (একটি, অথবা একাধিক রেকর্ড একত্রে)।</li>
+              <li>প্রিন্ট করে স্বাক্ষর নিয়ে চিঠি পাঠান।</li>
+            </ol>
+            <div class="where">📍 <b>কোথায়:</b> সবকিছুর শুরু ড্যাশবোর্ড (হোম) থেকে।</div>
+          </div>
+        </details>
+        <details class="acc" id="login">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>লগইন ও ব্যবহারকারীর ধরন</h3><span class="acc-blurb">কে কী করতে পারবে — অ্যাডমিন ও সাধারণ ব্যবহারকারীর পার্থক্য।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>কেন দরকার</h4>
+            <p>চিঠির তথ্য সংবেদনশীল। তাই লগইন ছাড়া কোনো পেজ বা PDF খোলা যায় না, এবং কে কতটুকু করতে পারবে তা ভূমিকা (role) দিয়ে নিয়ন্ত্রিত।</p>
+            <h4>কীভাবে কাজ করে</h4>
+            <ul>
+              <li>লগইন পেজে ইউজারনেম ও পাসওয়ার্ড দিন। সঠিক হলে ড্যাশবোর্ড খুলবে।</li>
+              <li><b>সাধারণ ব্যবহারকারী:</b> রেকর্ড তৈরি/সম্পাদনা, PDF ডাউনলোড, প্রিভিউ, নিজের পাসওয়ার্ড বদল।</li>
+              <li><b>অ্যাডমিন:</b> উপরের সবকিছু, সাথে ব্যবহারকারী পরিচালনা, পরিসংখ্যান, ব্যাকআপ/রিস্টোর এবং রেকর্ড মুছে ফেলা।</li>
+              <li>অ্যাডমিন কোনো ব্যবহারকারীকে নিষ্ক্রিয় করলে সে আর ঢুকতে পারবে না।</li>
+            </ul>
+            <div class="where">📍 <b>কোথায়:</b> লগইন পেজ; ব্যবহারকারী পরিচালনা — মেনুর “🛡️ মাই অ্যাডমিন” → “ব্যবহারকারী” ট্যাব (শুধু অ্যাডমিন)।</div>
+          </div>
+        </details>
+        <details class="acc" id="menu">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>মেনু ও পেজ: কোথায় কী আছে</h3><span class="acc-blurb">উপরের মেনুর প্রতিটি পেজ কীসের জন্য।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>মেনুর পেজগুলো</h4>
+            <table style="width:100%;border-collapse:collapse;font-size:.93rem">
+              <tr><td style="border-bottom:1px solid #e2e8f0;padding:8px 6px;white-space:nowrap"><b>📋 ড্যাশবোর্ড</b></td><td style="border-bottom:1px solid #e2e8f0;padding:8px 6px">সব রেকর্ডের তালিকা, খোঁজা, প্রিভিউ, ট্রানজিট ও ইনভেলাপ ডাউনলোড, মার্জ।</td></tr>
+              <tr><td style="border-bottom:1px solid #e2e8f0;padding:8px 6px;white-space:nowrap"><b>➕ নতুন তৈরি</b></td><td style="border-bottom:1px solid #e2e8f0;padding:8px 6px">নতুন রেকর্ড লেখা; ড্রাফট বা প্রকাশ।</td></tr>
+              <tr><td style="border-bottom:1px solid #e2e8f0;padding:8px 6px;white-space:nowrap"><b>✏️ এন্ট্রি সম্পাদন</b></td><td style="border-bottom:1px solid #e2e8f0;padding:8px 6px">সাজেশনে জমা থাকা পত্র নং ও ঠিকানার তালিকা ঠিক করা বা মুছে ফেলা।</td></tr>
+              <tr><td style="padding:8px 6px;white-space:nowrap"><b>🛡️ মাই অ্যাডমিন</b></td><td style="padding:8px 6px">শুধু অ্যাডমিনের জন্য: পরিসংখ্যান, ব্যবহারকারী, ব্যাকআপ ও রিস্টোর।</td></tr>
+            </table>
+            <h4>ফুটারের লিংক</h4>
+            <p>প্রতিটি পেজের নিচে Home, About, Blog ও Contact লিংক আছে। Home সিস্টেমে ফিরিয়ে নেয়; About, Blog ও Contact এই তথ্যপেজগুলো খোলে।</p>
+            <div class="note">ছোট স্ক্রিনে (মোবাইল) মেনু উপরের ☰ বাটনের ভেতরে থাকে।</div>
+          </div>
+        </details>
+        <details class="acc" id="dashboard">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>ড্যাশবোর্ড: রেকর্ডের তালিকা</h3><span class="acc-blurb">সব রেকর্ড এক টেবিলে — খোঁজা, পাতা বদল এবং প্রতিটির কাজের বাটন।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>কেন দরকার</h4>
+            <p>দিনের শেষে কোন কোন চিঠি পাঠানো হলো, কোনটির ট্রানজিট/খাম বাকি— সব এক জায়গা থেকে দেখার জন্য।</p>
+            <h4>টেবিলের কলাম</h4>
+            <ul>
+              <li><b>ক্রমিক</b> — তালিকার সারি নম্বর।</li>
+              <li><b>ট্রানজিট নং</b> — প্রকাশিত রেকর্ডের স্থায়ী নম্বর, যেমন <code>TMS-2026-0001</code>। ড্রাফটে নম্বর থাকে না।</li>
+              <li><b>তারিখ</b> ও <b>বিতরণ এলাকা</b> — এলাকা অনুযায়ী সারির রং আলাদা, তাই চোখে দেখেই ধরা যায়।</li>
+              <li><b>বিবরণ</b> — রেকর্ডের সংক্ষিপ্ত বর্ণনা।</li>
+              <li><b>ট্রানজিট / ইনভেলাপ</b> — PDF নামানোর বাটন (এবং মার্জের টিকবক্স)।</li>
+              <li><b>ইডিট / ম্যানেজ</b> — সম্পাদনা, ড্রাফট প্রকাশ, (অ্যাডমিনের জন্য) মুছে ফেলা।</li>
+            </ul>
+            <h4>খোঁজা</h4>
+            <p>উপরের সার্চ বক্সে ট্রানজিট নং, বিতরণ এলাকা, বিবরণ, পত্র নং বা ঠিকানার যেকোনো অংশ লিখুন। একাধিক শব্দ লিখলে সবগুলো মিলতে হবে। বাংলা ও ইংরেজি সংখ্যা দুটোই কাজ করে (১২৩ লিখলে 123-ও মিলবে)।</p>
+            <h4>পেজ সাইজ</h4>
+            <p>টেবিলের নিচে “মোট X টির মধ্যে ১–১৫” লেখার পাশের ড্রপডাউন থেকে প্রতি পেজে ১৫, ২০, ৩০, ৫০ বা ১০০টি রেকর্ড দেখা যায়।</p>
+            <div class="where">📍 <b>কোথায়:</b> মেনুর “📋 ড্যাশবোর্ড” (লগইনের পর প্রথম পেজ)।</div>
+          </div>
+        </details>
+        <details class="acc" id="create">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>নতুন রেকর্ড তৈরি: ফর্মের প্রতিটি ঘর</h3><span class="acc-blurb">তারিখ, এলাকা, বিবরণ এবং চিঠির এন্ট্রি কীভাবে পূরণ করবেন।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>কেন এভাবে</h4>
+            <p>ফর্মটি দুই ভাগে: উপরে পুরো ব্যাচের সাধারণ তথ্য, নিচে প্রতিটি চিঠির আলাদা এন্ট্রি। ফলে একই তারিখ-এলাকা বারবার লিখতে হয় না।</p>
+            <h4>সাধারণ তথ্য</h4>
+            <ul>
+              <li><b>তারিখ</b> — ডিফল্টে আজকের তারিখ।</li>
+              <li><b>বিতরণ এলাকা</b> — সেনানিবাস এলাকা, মন্ত্রণালয় এলাকা, সিগন্যাল সেন্টার বা অন্যান্য। এক বা একাধিক বাছাই করা যায়।</li>
+              <li><b>বিবরণ</b> — ঐচ্ছিক ছোট নোট। পরে অ্যাডমিন এটি সংশোধন করতে পারেন।</li>
+            </ul>
+            <h4>প্রতিটি এন্ট্রিতে</h4>
+            <ul>
+              <li><b>পত্র নং ও তারিখ</b> — একাধিক দেওয়া যায় (<span class="pill">＋ আরেকটি পত্র নং যোগ করুন</span>)। প্রতিটি নম্বরের জন্য আলাদা তারিখ; লেখার সময় আগের নম্বর সাজেশন আসে।</li>
+              <li><b>ঠিকানা সমূহ</b> — একাধিক দেওয়া যায় (<span class="pill">＋ আরেকটি ঠিকানা</span>)। প্রতিটি ঠিকানার ভেতরে লাইন ভেঙে লেখা যায়।</li>
+              <li><b>চিঠির ধরন</b> — গোপনীয়, অতি গোপনীয়, জরুরি ইত্যাদি। এটি খামের নির্দিষ্ট জায়গায় ছাপা হয়।</li>
+            </ul>
+            <h4>এন্ট্রি যোগ করা</h4>
+            <p>একটি চিঠির সব তথ্য লিখে <span class="pill">✅ যোগ করুন</span> চাপলে সেটি নিচের “যোগ করা এন্ট্রি” তালিকায় জমা হয়। এভাবে একটি রেকর্ডে যত চিঠি দরকার যোগ করুন; তালিকা থেকে যেকোনো এন্ট্রি আবার সম্পাদনাও করা যায়।</p>
+            <h4>শেষে</h4>
+            <p>নিচের দুটি বাটন: <span class="pill">📝 ড্রাফট করুন</span> (পরে শেষ করবেন) অথবা <span class="pill">💾 সংরক্ষণ ও তৈরি করুন</span> (এখনই চূড়ান্ত — সিরিয়াল নম্বর তৈরি হয়)।</p>
+            <div class="where">📍 <b>কোথায়:</b> মেনুর “➕ নতুন তৈরি”।</div>
+          </div>
+        </details>
+        <details class="acc" id="draft">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>ড্রাফট, প্রকাশ ও ট্রানজিট নম্বর</h3><span class="acc-blurb">নম্বর কখন তৈরি হয়, ড্রাফট কীভাবে আপডেট হয়, প্রকাশিত রেকর্ড এডিট করলে কী হয়।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>কেন এই নিয়ম</h4>
+            <p>ট্রানজিট নম্বর হলো সরকারি রেকর্ডের পরিচয়। ড্রাফটে নম্বর দিলে যে ড্রাফট শেষ পর্যন্ত বাতিল হয় তার নম্বর ফাঁকা পড়ে যেত। তাই <b>নম্বর তৈরি হয় শুধু প্রকাশের মুহূর্তে</b>।</p>
+            <h4>কীভাবে কাজ করে</h4>
+            <ul>
+              <li><b>ড্রাফট:</b> শুধু সংরক্ষিত হয়, কোনো ট্রানজিট নম্বর পায় না। ড্যাশবোর্ডে “প্রকাশের পর আইডি হবে” লেখা দেখায়। ড্রাফটে ট্রানজিট বা ইনভেলাপ নামানো যায় না।</li>
+              <li><b>ড্রাফট সম্পাদনা:</b> যতবার ইচ্ছা সম্পাদনা ও আপডেট করা যায়; প্রতিবার একই ড্রাফট আপডেট হয়, নতুন রেকর্ড তৈরি হয় না।</li>
+              <li><b>প্রকাশ:</b> “প্রকাশ করুন” চাপলে সিস্টেম পরবর্তী ক্রমিক নম্বর দেয়, ফরম্যাট <code>TMS-বছর-ক্রমিক</code> (যেমন <code>TMS-2026-0299</code>)।</li>
+              <li><b>প্রকাশিত রেকর্ড সম্পাদনা:</b> সম্পাদনা করে সংরক্ষণ করলে একটি <u>নতুন রেকর্ড</u> তৈরি হয়; পুরনোটি অক্ষত থাকে। ফলে আগের ছাপা কাগজের সাথে মিল রেখে ইতিহাস থেকে যায়।</li>
+            </ul>
+            <div class="note">💡 প্রকাশের আগে ঠিকানা ও পত্র নং আরেকবার মিলিয়ে নিন — কারণ প্রকাশিত রেকর্ড বদলালে নতুন নম্বর লাগে।</div>
+            <div class="where">📍 <b>কোথায়:</b> ড্যাশবোর্ডের “ইডিট / ম্যানেজ” কলামে ড্রাফটের পাশে “🚀 প্রকাশ করুন” বাটন; ইডিট পেজেও প্রকাশের বাটন আছে।</div>
+          </div>
+        </details>
+        <details class="acc" id="numbering">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>একাধিক পত্র নম্বর ও ক, খ, গ ক্রম</h3><span class="acc-blurb">একটি ঠিকানায় একাধিক চিঠি গেলে স্মারক কীভাবে সাজে।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>কেন দরকার</h4>
+            <p>একই প্রাপককে একসাথে কয়েকটি চিঠি দিলে সবগুলোর নম্বর একটি রো বা খামে আলাদা করে চেনা যেতে হয়।</p>
+            <h4>কীভাবে কাজ করে</h4>
+            <p>একটির বেশি পত্র নং থাকলে সিস্টেম সামনে স্বয়ংক্রিয়ভাবে (ক), (খ), (গ)… বসায়; তারিখও সেই ক্রমেই পাশে বসে। একটিই নম্বর থাকলে কোনো অক্ষর বসে না।</p>
+            <div class="ex">
+              <table>
+                <tr><th>পত্র নং</th><th>তারিখ</th></tr>
+                <tr><td>(ক) ১০.১০.১০.৪০<br>(খ) ১০.১০.১০.৫০</td><td>০১-০১-২০২৬<br>০২-০১-২০২৬</td></tr>
+              </table>
+            </div>
+            <div class="where">📍 <b>কোথায়:</b> ট্রানজিট স্লিপের “পত্র নং” কলামে এবং ইনভেলাপে।</div>
+          </div>
+        </details>
+        <details class="acc" id="grouping">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>একই ঠিকানা স্বয়ংক্রিয়ভাবে মেলানো</h3><span class="acc-blurb">আলাদা এন্ট্রিতে লিখলেও একই ঠিকানার চিঠি এক রো/এক খামে আসে।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>কেন দরকার</h4>
+            <p>ধরুন ১০.১০.১০.৪০ এবং ১০.১০.১০.৫০ দুটোই “স্বরাষ্ট্র”-তে যাবে। আলাদা দুটি রো/খাম বানালে কাগজ নষ্ট হয়, প্রাপককে দুবার স্বাক্ষরও করতে হয়। সিস্টেম তাই এগুলো নিজে থেকে এক জায়গায় আনে।</p>
+            <h4>নিয়মগুলো</h4>
+            <ul>
+              <li><b>একই রেকর্ডের ভেতরে:</b> একই ঠিকানা কয়েকবার থাকলেও সবসময় ১টি রো/খাম হয়, স্মারক যুক্ত হয় ক, খ, গ… ক্রমে। এর জন্য কিছু করতে হয় না।</li>
+              <li><b>আলাদা রেকর্ড মার্জ করলে:</b> ডিফল্টে ঠিকানা <u>আলাদাই</u> থাকে (প্রতিটি রেকর্ডের নিজস্ব রো)। একত্র করতে চাইলে মার্জ বারে “🔗 একই ঠিকানা একত্র” টিক দিন।</li>
+              <li><b>ঠিকানা মেলানোর পদ্ধতি:</b> বাড়তি ফাঁকা স্থান, লাইনের শুরু/শেষের স্পেস ও ইংরেজি অক্ষরের ছোট-বড় হাতের পার্থক্য উপেক্ষা করা হয়। কিন্তু শব্দ বা বানান আলাদা হলে ঠিকানা আলাদা ধরা হয়।</li>
+              <li>মূল তথ্য (ডাটাবেস) কখনো বদলায় না; মেলানো হয় শুধু PDF ও প্রিভিউ তৈরির সময়।</li>
+            </ul>
+            <div class="ex">
+              <table>
+                <tr><th>ঠিকানা</th><th>টিক ছাড়া (ডিফল্ট)</th><th>টিক দিলে</th></tr>
+                <tr><td>স্বরাষ্ট্র (রেকর্ড ২০০: ক, খ; রেকর্ড ২০১: গ)</td><td>২টি রো — (ক, খ) ও (গ)</td><td>১টি রো — (ক, খ, গ)</td></tr>
+              </table>
+            </div>
+          </div>
+        </details>
+        <details class="acc" id="transit">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>ট্রানজিট স্লিপ</h3><span class="acc-blurb">চিঠি হস্তান্তরের স্বাক্ষর-সহ ছাপার উপযোগী শিট — এর ভেতরে কী আছে ও কীভাবে নামাবেন।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>কেন দরকার</h4>
+            <p>চিঠি বিলি করার সময় প্রাপকের স্বাক্ষর ও তারিখ নিয়ে প্রমাণ রাখতে ট্রানজিট স্লিপ লাগে।</p>
+            <h4>স্লিপে যা থাকে</h4>
+            <ul>
+              <li>শিরোনাম “ট্রানজিট স্লিপ” ও তারিখ।</li>
+              <li>কলাম: <b>ক্রঃ, পত্র নং, পত্রের তারিখ, ঠিকানা, গ্রহণকারীর স্বাক্ষর ও তারিখ</b>।</li>
+              <li>নিচে “প্রেরকের স্বাক্ষর”।</li>
+            </ul>
+            <h4>রো সংখ্যা বাছাই</h4>
+            <p>ট্রানজিট বাটনের ড্রপডাউন থেকে প্রতি পেজে <b>৫, ৬ (ডিফল্ট), ৭, ১০, ১১ বা ১২</b> রো বেছে নেওয়া যায়। শেষ পেজের বাকি অংশ ফাঁকা রো দিয়ে ভরে দেওয়া হয়, যাতে ছাপা পেজ সবসময় পূর্ণ দেখায়।</p>
+            <h4>কীভাবে নামাবেন</h4>
+            <ol>
+              <li>ড্যাশবোর্ডে রেকর্ডের “ট্রানজিট” কলামে ড্রপডাউন খুলে রো সংখ্যা বাছুন।</li>
+              <li>PDF নামবে; প্রিন্ট করুন।</li>
+            </ol>
+            <div class="where">📍 <b>কোথায়:</b> ড্যাশবোর্ড → “ট্রানজিট” কলাম। শুধু প্রকাশিত রেকর্ডের জন্য।</div>
+          </div>
+        </details>
+        <details class="acc" id="signal">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>Signal ট্রানজিট</h3><span class="acc-blurb">ঠিকানা-ভিত্তিক বিকল্প বিন্যাস, যেখানে প্রতি পেজে শিরোনাম ও স্বাক্ষর আসে।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>কেন আলাদা</h4>
+            <p>কিছু ক্ষেত্রে এক চিঠিতে নয়, ঠিকানা ধরে ধরে তালিকা দরকার। Signal ট্রানজিট সেই বিন্যাস দেয়।</p>
+            <h4>কীভাবে কাজ করে</h4>
+            <ul>
+              <li>ঠিকানা অনুযায়ী প্রতিটি রো: ক্রঃ, পত্র নং, পত্রের তারিখ, ঠিকানা, গ্রহণকারীর স্বাক্ষর।</li>
+              <li>শিরোনাম ও “প্রেরকের স্বাক্ষর” প্রতিটি পেজে নিজে থেকে আসে, তাই কয়েক পেজ হলেও প্রতিটি পেজ আলাদাভাবে স্বাক্ষর করা যায়।</li>
+              <li>একই ঠিকানার চিঠি এক রো-তে মিলে যায় (<a href="#grouping">একই ঠিকানা মেলানো</a> দেখুন)।</li>
+            </ul>
+            <div class="where">📍 <b>কোথায়:</b> ট্রানজিট ড্রপডাউনে “Signal Transit” বিকল্প; মার্জ বারেও আছে।</div>
+          </div>
+        </details>
+        <details class="acc" id="envelope">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>ইনভেলাপ (খাম)</h3><span class="acc-blurb">প্রতিটি ঠিকানার জন্য আলাদা খাম, চিঠির ধরন অনুযায়ী ছাপার জায়গা।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>কেন দরকার</h4>
+            <p>খামে হাতে ঠিকানা লেখার বদলে প্রিন্ট করলে লেখা পরিষ্কার হয়, সময় বাঁচে এবং ভুল কমে।</p>
+            <h4>কীভাবে কাজ করে</h4>
+            <ul>
+              <li>প্রতিটি আলাদা ঠিকানার জন্য একটি করে ইনভেলাপ; PDF-টি ল্যান্ডস্কেপ (আড়াআড়ি) বিন্যাসে।</li>
+              <li>ঠিকানার সাথে পত্র নং (একাধিক হলে ক, খ, গ…) এবং তারিখ ছাপা হয়।</li>
+              <li>চিঠির ধরন অনুযায়ী লেখা নির্দিষ্ট জায়গায় বসে। যেমন: <em>গোপনীয়/অতি গোপনীয়</em> — খামের উপরে ও ঠিকানার নিচে; <em>জরুরি/অতি জরুরি</em> — উপরের ডান পাশে (তারিখের দিকে)।</li>
+            </ul>
+            <div class="where">📍 <b>কোথায়:</b> ড্যাশবোর্ড → “ইনভেলাপ” কলামের বাটন।</div>
+          </div>
+        </details>
+        <details class="acc" id="preview">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>প্রিভিউ: ডাউনলোড ছাড়াই ঠিকানা দেখা</h3><span class="acc-blurb">👁️ বাটনে চাপলেই ঠিকানা ও স্মারকের সারাংশ, PDF না নামিয়েই।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>কেন দরকার</h4>
+            <p>শুধু ঠিকানাটা ঠিক আছে কি না দেখতে PDF নামিয়ে খুলতে হলে সময় নষ্ট হয়। প্রিভিউ সেই কাজ এক ক্লিকে করে।</p>
+            <h4>কীভাবে কাজ করে</h4>
+            <p>প্রকাশিত রেকর্ডের পাশের 👁️ বাটনে চাপলে একটি জানালা খোলে যেখানে প্রতিটি ইনভেলাপের ঠিকানা, পত্র নং ও তারিখ কার্ড আকারে দেখা যায়। একই ঠিকানার চিঠি এখানেও এক কার্ডে মিলিয়ে দেখানো হয়।</p>
+            <div class="where">📍 <b>কোথায়:</b> ড্যাশবোর্ডের প্রতিটি সারিতে 👁️ প্রিভিউ বাটন।</div>
+          </div>
+        </details>
+        <details class="acc" id="merge">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>একাধিক রেকর্ড একত্রে মার্জ করা</h3><span class="acc-blurb">অনেক রেকর্ডের ট্রানজিট বা ইনভেলাপ বেছে একটি PDF-এ নামানো।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>কেন দরকার</h4>
+            <p>দিনে কয়েকটি রেকর্ড হলে প্রতিটির আলাদা PDF ছাপা ঝামেলার; একত্রে এক ফাইলে ছাপলে কাগজ ও সময় দুটোই বাঁচে।</p>
+            <h4>ইনভেলাপ মার্জ</h4>
+            <ol>
+              <li>যে রেকর্ডগুলোর খাম চান, সেগুলোর “ইনভেলাপ”-এর পাশের ছোট চেকবক্সে টিক দিন।</li>
+              <li>উপরে একটি বার আসবে— নির্বাচিত রেকর্ডের সংখ্যা সহ।</li>
+              <li>চাইলে <span class="pill">🔗 একই ঠিকানা একত্র</span> টিক দিন।</li>
+              <li>“ডাউনলোড করুন” চাপুন— সব রেকর্ডের ইনভেলাপ একটি PDF-এ আসবে।</li>
+            </ol>
+            <h4>ট্রানজিট মার্জ</h4>
+            <ol>
+              <li>“ট্রানজিট” বাটনের পাশের চেকবক্সে টিক দিন (একাধিক রেকর্ডে)।</li>
+              <li>বারে প্রতি পেজে কত রো (৫–১২) বা Signal বিন্যাস বাছুন।</li>
+              <li>চাইলে “একই ঠিকানা একত্র” টিক দিন।</li>
+              <li>ডাউনলোড চাপুন — সব ঠিকানা একটি ট্রানজিটে আসবে; <b>হেডিং একটি, স্বাক্ষর ফুটারও একটি</b>। হেডিংয়ের তারিখ প্রথমে টিক দেওয়া রেকর্ডের।</li>
+            </ol>
+            <h4>মনে রাখুন</h4>
+            <ul>
+              <li>মার্জে শুধু প্রকাশিত রেকর্ড যায়; ড্রাফট বাদ পড়ে।</li>
+              <li>ডাউনলোড বা “বাতিল” করলে টিকগুলো সরে যায়, “একই ঠিকানা একত্র” টিকও আবার বন্ধ হয় — যাতে পরের বার ভুল করে সক্রিয় না থাকে।</li>
+              <li>নির্বাচন এক পেজ থেকে আরেক পেজে গেলেও মনে থাকে।</li>
+            </ul>
+            <div class="where">📍 <b>কোথায়:</b> ড্যাশবোর্ড → “ট্রানজিট” ও “ইনভেলাপ” কলামের চেকবক্স; উপরে নীল বার।</div>
+          </div>
+        </details>
+        <details class="acc" id="suggest">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>স্বয়ংক্রিয় সাজেশন ও এন্ট্রি সম্পাদন</h3><span class="acc-blurb">আগের ঠিকানা ও পত্র নং নিজে থেকে প্রস্তাব করে; ভুলগুলো এক জায়গায় ঠিক করা যায়।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>কেন দরকার</h4>
+            <p>একই দপ্তর ও একই ঠিকানায় বারবার চিঠি যায়। প্রতিবার পুরো ঠিকানা টাইপ করলে ভুল হয়; সাজেশন থেকে বেছে নিলে সবসময় একই বানান থাকে— যা ঠিকানা মেলানোর কাজেও সাহায্য করে।</p>
+            <h4>কীভাবে কাজ করে</h4>
+            <ul>
+              <li>ঠিকানা বা পত্র নং লেখা শুরু করলে মিল থাকা আগের মানগুলো নিচে তালিকায় আসে।</li>
+              <li>প্রতিটি রেকর্ড সংরক্ষণের সময় নতুন ঠিকানা/পত্র নং সাজেশনে জমা হয় এবং কতবার ব্যবহৃত হলো তা গোনা হয়।</li>
+              <li>ঠিকানা সংরক্ষণের সময় লাইনের বাড়তি স্পেস ও ফাঁকা লাইন বাদ দিয়ে পরিষ্কার করে রাখা হয়।</li>
+            </ul>
+            <h4>এন্ট্রি সম্পাদন পেজ</h4>
+            <p>ভুল বানানে জমা হওয়া কোনো ঠিকানা বা পত্র নং সাজেশন থেকে সম্পাদনা করতে বা মুছতে এই পেজ ব্যবহার করুন। এখানে বদলালে শুধু ভবিষ্যতের সাজেশন বদলায়; আগের রেকর্ড বদলায় না।</p>
+            <div class="where">📍 <b>কোথায়:</b> মেনুর “✏️ এন্ট্রি সম্পাদন”।</div>
+          </div>
+        </details>
+        <details class="acc" id="edit">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>রেকর্ড সম্পাদনা ও মুছে ফেলা</h3><span class="acc-blurb">ভুল শোধরানো, বিবরণ আপডেট এবং রেকর্ড মুছে ফেলার নিয়ম।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>সম্পাদনা</h4>
+            <ul>
+              <li><b>ড্রাফট:</b> একই রেকর্ডে আপডেট হয় (আগের নিয়ম দেখুন)।</li>
+              <li><b>প্রকাশিত রেকর্ড:</b> সংরক্ষণে নতুন রেকর্ড ও নতুন নম্বর তৈরি হয়; পুরনোটি থাকে।</li>
+              <li><b>বিবরণ:</b> এটি অ্যাডমিন যেকোনো সময় সরাসরি সংশোধন করতে পারেন।</li>
+            </ul>
+            <h4>মুছে ফেলা</h4>
+            <p>শুধু অ্যাডমিন রেকর্ড মুছতে পারেন। মুছার আগে নিশ্চিতকরণ জানতে চাওয়া হয়। মুছলে রেকর্ডটির সব চিঠি ও ঠিকানা একসাথে মুছে যায়।</p>
+            <div class="warn">⚠️ মুছে ফেলা ফেরানো যায় না। নিশ্চিত না হলে আগে ব্যাকআপ নিয়ে রাখুন।</div>
+          </div>
+        </details>
+        <details class="acc" id="admin">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>অ্যাডমিন প্যানেল: পরিসংখ্যান ও ব্যবহারকারী</h3><span class="acc-blurb">কাজের পরিমাণ দেখা এবং কে সিস্টেম ব্যবহার করবে তা ঠিক করা।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>📊 পরিসংখ্যান</h4>
+            <ul>
+              <li>তিনটি সারাংশ কার্ড: মোট ট্রানজিট (তৈরি), মোট ইনভেলাপ (খাম) এবং মোট ঠিকানা (চিঠি)।</li>
+              <li>সময় বাছাই: সব সময়, এই মাস, গত ৩০ দিন, এই বছর, অথবা নিজের দেওয়া শুরু-শেষ তারিখ।</li>
+              <li>বিতরণ এলাকা অনুযায়ী চার্ট; চার্টের রং ড্যাশবোর্ডের সারির রঙের সাথে মেলে।</li>
+              <li>শুধু প্রকাশিত রেকর্ড গোনা হয়; ড্রাফট বাদ।</li>
+            </ul>
+            <h4>👥 ব্যবহারকারী</h4>
+            <ul>
+              <li>নতুন ব্যবহারকারী যোগ (ইউজারনেম, পাসওয়ার্ড, পূর্ণ নাম, ভূমিকা)।</li>
+              <li>ভূমিকা বদল, নাম সম্পাদনা, সক্রিয়/নিষ্ক্রিয় করা, পাসওয়ার্ড রিসেট।</li>
+              <li>প্রত্যেকে নিজের পাসওয়ার্ড নিজে বদলাতে পারেন।</li>
+            </ul>
+            <div class="where">📍 <b>কোথায়:</b> “🛡️ মাই অ্যাডমিন” → “পরিসংখ্যান” ও “ব্যবহারকারী” ট্যাব।</div>
+          </div>
+        </details>
+        <details class="acc" id="backup">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>ব্যাকআপ ও রিস্টোর</h3><span class="acc-blurb">সব তথ্যের একটি কপি নিজের কাছে রাখা এবং প্রয়োজনে ফিরিয়ে আনা।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>কেন দরকার</h4>
+            <p>ভুলে মুছে ফেলা বা অন্য কোনো সমস্যার ক্ষেত্রে ব্যাকআপ থাকলে সব ফিরে পাওয়া যায়।</p>
+            <h4>কীভাবে কাজ করে</h4>
+            <ul>
+              <li><b>ব্যাকআপ:</b> রেকর্ড, চিঠি, ঠিকানা ও সাজেশন একটি ফাইলে নামে। ফাইলটি নিরাপদ জায়গায় রাখুন।</li>
+              <li><b>রিস্টোর:</b> ব্যাকআপ ফাইল আপলোড করলে সিস্টেম <u>বর্তমান রেকর্ড মুছে</u> ফাইলের তথ্য বসিয়ে দেয়।</li>
+            </ul>
+            <div class="warn">⚠️ রিস্টোরের আগে বর্তমান অবস্থার একটি নতুন ব্যাকআপ নিয়ে রাখুন, নইলে এখনকার নতুন তথ্য হারাতে পারেন।</div>
+            <div class="note">নিয়মিত (যেমন সপ্তাহে একবার) ব্যাকআপ নেওয়ার অভ্যাস করুন।</div>
+            <div class="where">📍 <b>কোথায়:</b> “🛡️ মাই অ্যাডমিন” → “💾 ব্যাকআপ ও রিস্টোর” ট্যাব (শুধু অ্যাডমিন)।</div>
+          </div>
+        </details>
+        <details class="acc" id="security">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>নিরাপত্তা ও তথ্যের যত্ন</h3><span class="acc-blurb">কীভাবে তথ্য সুরক্ষিত থাকে এবং আপনি কী করবেন।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>সিস্টেম যা করে</h4>
+            <ul>
+              <li>লগইন ছাড়া কোনো তথ্য বা PDF পাওয়া যায় না; প্রতিটি অনুরোধে পরিচয় যাচাই হয়।</li>
+              <li>পাসওয়ার্ড সরাসরি নয়, এনক্রিপ্ট (হ্যাশ) করে রাখা হয়।</li>
+              <li>অ্যাডমিন-ওনলি কাজ (মুছা, ব্যবহারকারী, ব্যাকআপ) সাধারণ ব্যবহারকারী করতে পারে না।</li>
+            </ul>
+            <h4>আপনার করণীয়</h4>
+            <ul>
+              <li>শক্ত পাসওয়ার্ড দিন এবং কাউকে জানাবেন না।</li>
+              <li>শেয়ার্ড কম্পিউটারে কাজ শেষে লগআউট করুন।</li>
+              <li>ব্যাকআপ ফাইল নিরাপদ জায়গায় রাখুন।</li>
+            </ul>
+          </div>
+        </details>
+          </div>
+        </div>
+
+        <div class="group-block">
+          <h2 class="group-title" id="faq">❓ সম্ভাব্য প্রশ্ন ও সমাধান (FAQ)</h2>
+          <p class="group-sub">নতুন ব্যবহারকারীরা যে বিষয়গুলো বুঝতে সমস্যায় পড়তে পারেন, তার প্রশ্ন ও সমাধান।</p>
+          <div class="acc-list" data-toc="faq">
+        <details class="acc faq" id="q-login">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>লগইন করতে পারছি না, কী করব?</h3><span class="acc-blurb">ভুল পাসওয়ার্ড, নিষ্ক্রিয় অ্যাকাউন্ট বা ধীর সংযোগ হতে পারে।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>সমাধান</h4>
+            <ol>
+              <li>ইউজারনেম ও পাসওয়ার্ড আবার দেখুন। ছোট-বড় হাতের অক্ষর ও কীবোর্ডের ভাষা (বাংলা/ইংরেজি) খেয়াল করুন।</li>
+              <li>পাসওয়ার্ড ভুলে গেলে অ্যাডমিনকে বলুন — তিনি “ব্যবহারকারী” ট্যাব থেকে নতুন পাসওয়ার্ড দিতে পারবেন।</li>
+              <li>সঠিক তথ্য দিয়েও না ঢুকলে হতে পারে আপনার অ্যাকাউন্ট নিষ্ক্রিয় করা আছে — অ্যাডমিনকে জানান।</li>
+              <li>কিছুক্ষণ নিষ্ক্রিয় থাকার পর সার্ভার সক্রিয় হতে একটু সময় নিতে পারে; ১ মিনিট অপেক্ষা করে আবার চেষ্টা করুন।</li>
+            </ol>
+          </div>
+        </details>
+        <details class="acc faq" id="q-noid">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>ড্রাফটে ট্রানজিট নম্বর (আইডি) নেই কেন?</h3><span class="acc-blurb">এটি ইচ্ছাকৃত — নম্বর শুধু প্রকাশের সময় তৈরি হয়।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>সমাধান</h4>
+            <p>এটি ত্রুটি নয়। ড্রাফট কেবল সংরক্ষিত থাকে; “প্রকাশ করুন” চাপলেই ক্রমিক নম্বর (যেমন <code>TMS-2026-0299</code>) তৈরি হয়। ড্যাশবোর্ডে ড্রাফটের জায়গায় “প্রকাশের পর আইডি হবে” দেখায়। ফলে বাতিল ড্রাফটের কারণে নম্বরে ফাঁক পড়ে না।</p>
+          </div>
+        </details>
+        <details class="acc faq" id="q-edit-new">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>প্রকাশিত রেকর্ড এডিট করলে নতুন নম্বর কেন হলো?</h3><span class="acc-blurb">পুরনো রেকর্ড অক্ষত রেখে নতুন সংস্করণ তৈরি হয়।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>সমাধান</h4>
+            <p>প্রকাশিত রেকর্ডের পরিবর্তন নতুন রেকর্ড হিসেবে সংরক্ষিত হয়, যাতে আগে ছাপা/পাঠানো কাগজের সাথে মিল রেখে ইতিহাস থাকে। যদি ভুল রেকর্ডটি আর দরকার না হয়, অ্যাডমিন সেটি মুছে দিতে পারেন।</p>
+            <div class="note">নম্বর বদলাতে না চাইলে প্রকাশের আগেই (ড্রাফট অবস্থায়) তথ্য ঠিক করে নিন।</div>
+          </div>
+        </details>
+        <details class="acc faq" id="q-sameaddr">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>একই ঠিকানা দুটি আলাদা রো/খামে এসেছে কেন?</h3><span class="acc-blurb">মার্জে ডিফল্টে আলাদা রেকর্ডের ঠিকানা আলাদা থাকে।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>সমাধান</h4>
+            <ol>
+              <li>একই রেকর্ডের ভেতরের একই ঠিকানা সবসময় এক হয়। আলাদা হলে ঠিকানার বানান বা শব্দ সামান্য আলাদা কি না দেখুন (নিচের প্রশ্ন দেখুন)।</li>
+              <li>আলাদা রেকর্ড মার্জ করার সময় একত্র করতে চাইলে মার্জ বারে <span class="pill">🔗 একই ঠিকানা একত্র</span> টিক দিয়ে ডাউনলোড করুন।</li>
+            </ol>
+          </div>
+        </details>
+        <details class="acc faq" id="q-notmatch">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>“একই ঠিকানা একত্র” টিক দিয়েও ঠিকানা মিলছে না?</h3><span class="acc-blurb">বানান বা শব্দের সামান্য ভিন্নতাই সাধারণ কারণ।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>সমাধান</h4>
+            <p>সিস্টেম ফাঁকা স্থান ও ইংরেজি ছোট-বড় হাতের পার্থক্য উপেক্ষা করে, কিন্তু অক্ষর বা শব্দ আলাদা হলে (যেমন “স্বরাষ্ট্র মন্ত্রণালয়” ও “স্বরাষ্ট্র”) আলাদা ধরে।</p>
+            <ol>
+              <li>ঠিকানাগুলো পাশাপাশি দেখে মিলিয়ে নিন।</li>
+              <li>ড্রাফট হলে ঠিকানা ঠিক করে নিন; প্রকাশিত হলে সম্পাদনা করে নতুন রেকর্ড বানান।</li>
+              <li>ভবিষ্যতে একই বানানের জন্য ঠিকানা সাজেশন থেকে বেছে নিন।</li>
+            </ol>
+          </div>
+        </details>
+        <details class="acc faq" id="q-draftmerge">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>মার্জ করার সময় ড্রাফট রেকর্ড আসছে না কেন?</h3><span class="acc-blurb">ড্রাফটে ট্রানজিট/খাম বাটনই নেই।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>সমাধান</h4>
+            <p>ডাউনলোড শুধু প্রকাশিত রেকর্ডের জন্য। ড্রাফট প্রকাশ করলে তার সারিতে ট্রানজিট ও ইনভেলাপ বাটন ও চেকবক্স আসবে।</p>
+          </div>
+        </details>
+        <details class="acc faq" id="q-rows">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>ট্রানজিটে কত রো বাছব — ৫, ৬ না ১২?</h3><span class="acc-blurb">ঠিকানা কত বড় এবং কত চিঠি তার ওপর নির্ভর করে।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>সমাধান</h4>
+            <ul>
+              <li>ঠিকানা লম্বা বা একাধিক লাইনের হলে কম রো (৫–৭) নিন — লেখার জায়গা বেশি পাবে।</li>
+              <li>ঠিকানা ছোট ও চিঠি বেশি হলে বেশি রো (১০–১২) নিন — কাগজ কম লাগবে।</li>
+              <li>নিশ্চিত না হলে ডিফল্ট ৬ রো ব্যবহার করুন, তারপর প্রিন্ট প্রিভিউ দেখে প্রয়োজনে বদলান।</li>
+            </ul>
+          </div>
+        </details>
+        <details class="acc faq" id="q-pdf">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>PDF নামছে না বা অনেক সময় নিচ্ছে, কী করব?</h3><span class="acc-blurb">সার্ভার ঘুমন্ত বা ইন্টারনেট ধীর হতে পারে।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>সমাধান</h4>
+            <ol>
+              <li>বাটন চাপার পর ৩০–৬০ সেকেন্ড অপেক্ষা করুন — দীর্ঘক্ষণ বন্ধ থাকলে PDF ইঞ্জিন চালু হতে সময় নিতে পারে।</li>
+              <li>ব্রাউজারের পপ-আপ/ডাউনলোড ব্লক বন্ধ আছে কি না দেখুন।</li>
+              <li>রেকর্ডটি ড্রাফট নয় তো? ড্রাফটের PDF নামে না।</li>
+              <li>এরপরও না হলে পেজ রিফ্রেশ করে আবার চেষ্টা করুন, না হলে <a href="contact.html">যোগাযোগ</a> পেজে জানান।</li>
+            </ol>
+          </div>
+        </details>
+        <details class="acc faq" id="q-print">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>প্রিন্টে লেখা কেটে যাচ্ছে বা মাপ ঠিক আসছে না?</h3><span class="acc-blurb">প্রিন্ট সেটিংসের স্কেলই সাধারণ কারণ।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>সমাধান</h4>
+            <ul>
+              <li>প্রিন্ট ডায়ালগে স্কেল <b>১০০% / Actual size</b> রাখুন; “Fit to page” বন্ধ করুন।</li>
+              <li>মার্জিন “Default” বা “None”— যা আপনার প্রিন্টারে ভালো আসে।</li>
+              <li>ইনভেলাপ PDF ল্যান্ডস্কেপ; প্রিন্টারে কাগজের দিক সেই অনুযায়ী দিন।</li>
+              <li>প্রথমে একটি সাদা কাগজে পরীক্ষা-প্রিন্ট করে নিন।</li>
+            </ul>
+          </div>
+        </details>
+        <details class="acc faq" id="q-suggest">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>সাজেশনে ভুল ঠিকানা আসছে, কীভাবে সরাব?</h3><span class="acc-blurb">এন্ট্রি সম্পাদন পেজ থেকে মুছুন বা ঠিক করুন।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>সমাধান</h4>
+            <p>মেনুর “✏️ এন্ট্রি সম্পাদন” পেজে ঠিকানা ও পত্র নং-এর তালিকা আছে। ভুলটি খুঁজে সম্পাদনা করুন বা মুছে দিন। এতে আগের রেকর্ড বদলাবে না, শুধু সাজেশন ঠিক হবে।</p>
+          </div>
+        </details>
+        <details class="acc faq" id="q-newuser">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>নতুন সহকর্মীকে সিস্টেম ব্যবহার করতে দেব কীভাবে?</h3><span class="acc-blurb">অ্যাডমিন ব্যবহারকারী তৈরি করবেন।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>সমাধান</h4>
+            <ol>
+              <li>অ্যাডমিন একাউন্টে ঢুকে “🛡️ মাই অ্যাডমিন” → “ব্যবহারকারী” ট্যাবে যান।</li>
+              <li>ইউজারনেম, পাসওয়ার্ড, পূর্ণ নাম দিন এবং ভূমিকা বাছুন (সাধারণ কাজে “ইউজার”)।</li>
+              <li>সংরক্ষণ করে ইউজারনেম-পাসওয়ার্ড সহকর্মীকে জানান; তিনি পরে নিজের পাসওয়ার্ড বদলে নিতে পারবেন।</li>
+            </ol>
+          </div>
+        </details>
+        <details class="acc faq" id="q-backup">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>ভুল করে রেকর্ড মুছে ফেলেছি, ফিরে পাওয়া যাবে?</h3><span class="acc-blurb">ব্যাকআপ থাকলে হ্যাঁ — না থাকলে নয়।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>সমাধান</h4>
+            <p>মুছে ফেলা সরাসরি ফেরানোর বাটন নেই। তবে নিয়মিত ব্যাকআপ নিয়ে থাকলে অ্যাডমিন সেই ব্যাকআপ রিস্টোর করতে পারেন। মনে রাখুন, রিস্টোর বর্তমান তথ্য মুছে ব্যাকআপের তথ্য বসায় — তাই আগে বর্তমান অবস্থার আরেকটি ব্যাকআপ নিন।</p>
+          </div>
+        </details>
+        <details class="acc faq" id="q-mobile">
+          <summary>
+            <span class="acc-num" aria-hidden="true"></span>
+            <span class="acc-main"><h3>মোবাইল বা ট্যাবলেটে ব্যবহার করা যাবে?</h3><span class="acc-blurb">হ্যাঁ — ব্রাউজারে ছোট স্ক্রিনেও কাজ করে।</span></span>
+            <span class="acc-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="acc-body">
+            <h4>সমাধান</h4>
+            <p>সিস্টেম ও এই তথ্যপেজগুলো ফোনেও ব্যবহারযোগ্য; মেনু ☰ বাটনের ভেতরে থাকে। তবে PDF দেখা ও ছাপার কাজ কম্পিউটারে করাই সুবিধাজনক।</p>
+          </div>
+        </details>
+          </div>
+        </div>
+
+        <div class="empty" id="blog-empty">কোনো ফলাফল পাওয়া যায়নি। অন্য শব্দ দিয়ে খুঁজুন।</div>
+
+        <div class="cta-band" style="margin-top:48px">
+          <h2>উত্তর পাননি?</h2>
+          <p>আপনার প্রশ্ন বা সমস্যা আমাদের জানান।</p>
+          <div class="hero-actions"><a class="btn btn-primary" href="contact.html">যোগাযোগ করুন</a></div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <footer class="site-footer">
-    <div class="inner">
-      <nav>
+    <div class="container">
+      <nav aria-label="ফুটার মেনু">
         <a href="./">Home</a>
         <a href="about.html">About</a>
         <a href="blog.html" class="active">Blog</a>
